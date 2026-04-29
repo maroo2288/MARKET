@@ -418,6 +418,60 @@ select.input {
   line-height: 1.65;
 }
 
+.tabs {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0 12px;
+}
+
+.tab {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 950;
+  color: var(--text1);
+}
+
+.tab.is-active {
+  background: rgba(37, 99, 235, 0.14);
+  border-color: rgba(37, 99, 235, 0.25);
+  color: var(--primary2);
+}
+
+.verify {
+  margin-top: 10px;
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  background: rgba(22, 163, 74, 0.08);
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.verify__title {
+  font-weight: 950;
+  margin-bottom: 6px;
+}
+
+.verify__text {
+  color: var(--text1);
+  line-height: 1.7;
+}
+
+.verify__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 10px;
+}
+
+#firebaseConfigInput {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+    monospace;
+  direction: ltr;
+}
+
 .ideaCard {
   display: grid;
   gap: 10px;
