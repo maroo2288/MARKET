@@ -374,16 +374,56 @@
   ];
 
   const WEB_IDEAS = [
-    { title: "موقع جرد مخازن", desc: "إدارة مخزون + تقارير + صلاحيات مستخدمين." },
-    { title: "موقع تنظيم مطاعم", desc: "قائمة طعام + طلبات + إدارة طاولات." },
-    { title: "موقع إعلانات", desc: "نشر إعلانات + بحث وتصنيفات + رسائل." },
-    { title: "موقع عيادة/حجز مواعيد", desc: "حجز مواعيد + تذكير + ملفات مرضى." },
-    { title: "موقع متجر إلكتروني", desc: "منتجات + سلة + دفع/شحن." },
-    { title: "موقع كورسات", desc: "دروس + اشتراكات + اختبارات." },
-    { title: "موقع عقارات", desc: "عروض + خرائط + تواصل سريع." },
-    { title: "موقع شركة خدمات", desc: "تعريف بالخدمات + نماذج طلب + معرض أعمال." },
-    { title: "موقع مدرسة/تعليم", desc: "محتوى + نتائج + تواصل مع أولياء الأمور." },
-    { title: "موقع صيانة وبلاغات", desc: "تسجيل بلاغ + متابعة حالة + تقييم خدمة." },
+    {
+      title: "موقع جرد مخازن",
+      desc: "إدارة مخزون + تقارير + صلاحيات مستخدمين.",
+      img: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+      title: "موقع تنظيم مطاعم",
+      desc: "قائمة طعام + طلبات + إدارة طاولات.",
+      img: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+      title: "موقع إعلانات",
+      desc: "نشر إعلانات + بحث وتصنيفات + رسائل.",
+      img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+      title: "موقع عيادة/حجز مواعيد",
+      desc: "حجز مواعيد + تذكير + ملفات مرضى.",
+      img: "https://images.unsplash.com/photo-1584982751601-97dcc096659c?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+      title: "موقع متجر إلكتروني",
+      desc: "منتجات + سلة + دفع/شحن.",
+      img: "https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+      title: "موقع كورسات",
+      desc: "دروس + اشتراكات + اختبارات.",
+      img: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+      title: "موقع عقارات",
+      desc: "عروض + خرائط + تواصل سريع.",
+      img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+      title: "موقع شركة خدمات",
+      desc: "تعريف بالخدمات + نماذج طلب + معرض أعمال.",
+      img: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+      title: "موقع مدرسة/تعليم",
+      desc: "محتوى + نتائج + تواصل مع أولياء الأمور.",
+      img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80",
+    },
+    {
+      title: "موقع صيانة وبلاغات",
+      desc: "تسجيل بلاغ + متابعة حالة + تقييم خدمة.",
+      img: "https://images.unsplash.com/photo-1581092160607-ee22731d8a94?auto=format&fit=crop&w=1200&q=80",
+    },
   ];
 
   function svgDataUri(title) {
@@ -426,7 +466,12 @@
     panelSubtitle.textContent = subtitle || "";
     panelBody.innerHTML = bodyHtml;
     panel.hidden = false;
-    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    // لو البانل باين بالفعل، ما نعملش نزول مزعج.
+    const rect = panel.getBoundingClientRect();
+    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+    if (!isVisible) {
+      panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
     if (typeof onAfterRender === "function") onAfterRender();
   }
 
@@ -521,7 +566,7 @@
       bodyHtml: `
         <div class="grid">
           ${WEB_IDEAS.map((idea, idx) => {
-            const img = svgDataUri(idea.title);
+            const img = idea.img || svgDataUri(idea.title);
             return `
               <div class="card">
                 <div class="ideaCard">
