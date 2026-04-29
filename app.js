@@ -23,7 +23,6 @@
   const FIREBASE_CONFIG_KEY = "tech_services_firebase_config_v1";
   const STORAGE_KEY = "tech_services_user_v1"; // fallback cache (لو Firebase مش متضبط)
   const SESSION_KEY = "tech_services_logged_in";
-  const THEME_KEY = "tech_services_theme";
   const LOGIN_LANG_KEY = "tech_services_login_lang";
 
   const el = (id) => document.getElementById(id);
@@ -59,7 +58,6 @@
   const quickWhatsApp = el("quickWhatsApp");
   const quickEmail = el("quickEmail");
   const logoutBtn = el("logoutBtn");
-  const themeToggle = el("themeToggle");
   const brandTitle = el("brandTitle");
 
   const loginLangSelect = el("loginLangSelect");
@@ -95,13 +93,6 @@
 
   function isValidEmail(email) {
     return /\S+@\S+\.\S+/.test(email);
-  }
-
-  function applyTheme(theme) {
-    const t = theme === "dark" ? "dark" : "light";
-    document.body.setAttribute("data-theme", t);
-    if (themeToggle) themeToggle.textContent = t === "dark" ? "☀️" : "🌙";
-    localStorage.setItem(THEME_KEY, t);
   }
 
   function applyLogoStyle(style) {
@@ -939,13 +930,6 @@
 
     confirmClose.addEventListener("click", () => confirmModal.close());
 
-    if (themeToggle) {
-      themeToggle.addEventListener("click", () => {
-        const current = document.body.getAttribute("data-theme") || "light";
-        applyTheme(current === "dark" ? "light" : "dark");
-      });
-    }
-
     if (loginLangSelect) {
       loginLangSelect.addEventListener("change", () => {
         applyLoginLanguage(loginLangSelect.value);
@@ -1128,7 +1112,6 @@
 
   function boot() {
     initFirebaseIfPossible();
-    applyTheme(localStorage.getItem(THEME_KEY) || "light");
     applyLogoStyle("style2");
     applyLoginLanguage(localStorage.getItem(LOGIN_LANG_KEY) || "ar");
     setQuickContacts();
