@@ -22,7 +22,6 @@
   };
   const FIREBASE_CONFIG_KEY = "tech_services_firebase_config_v1";
   const STORAGE_KEY = "tech_services_user_v1"; // fallback cache (لو Firebase مش متضبط)
-  const PASS_RETRY_KEY = "tech_services_first_password_retry_done";
   const SESSION_KEY = "tech_services_logged_in";
   const THEME_KEY = "tech_services_theme";
   const LOGO_STYLE_KEY = "tech_services_logo_style";
@@ -998,6 +997,35 @@
       const email = String(el("email").value || "").trim();
       const password = String(el("password").value || "");
 
+      if (!isValidEmail(email)) {
+        loginError.textContent = "اكتب بريد إلكتروني صحيح.";
+        loginError.hidden = false;
+        return;
+      }
+      if (password.length < 6) {
+        loginError.textContent = "الباسورد لازم يكون 6 أحرف/أرقام على الأقل.";
+        loginError.hidden = false;
+        return;
+      }
+
+      const existing = getProfile();
+
+      // لو الحساب موجود بنفس الإيميل: ندقق فقط في الباسورد
+      if (existing && existing.email === email) {
+        if (existing.password !== password) {
+          loginError.textContent = "الإيميل أو الباسورد غير صحيح.";
+          loginError.hidden = false;
+          return;
+        }
+
+        profileCache = existing;
+        sessionStorage.setItem(SESSION_KEY, "1");
+        loginModal.close();
+        renderHome();
+        return;
+      }
+
+      // أول تسجيل (أو إيميل جديد): نطلب البيانات الكاملة
       if (!fullName || fullName.split(/\s+/).length < 3) {
         loginError.textContent = "اكتب الاسم الثلاثي (3 كلمات على الأقل).";
         loginError.hidden = false;
@@ -1013,34 +1041,6 @@
         loginError.textContent = "اكتب العنوان.";
         loginError.hidden = false;
         return;
-      }
-      if (!isValidEmail(email)) {
-        loginError.textContent = "اكتب بريد إلكتروني صحيح.";
-        loginError.hidden = false;
-        return;
-      }
-      if (password.length < 6) {
-        loginError.textContent = "الباسورد لازم يكون 6 أحرف/أرقام على الأقل.";
-        loginError.hidden = false;
-        return;
-      }
-
-      const existing = getProfile();
-
-      // حسب طلبك: أول محاولة عند إنشاء الحساب فقط تطلع خطأ مرة واحدة
-      if (!existing && localStorage.getItem(PASS_RETRY_KEY) !== "done") {
-        localStorage.setItem(PASS_RETRY_KEY, "done");
-        loginError.textContent =
-          "كلمة المرور غير صحيحة. اكتبها مرة تانية (المحاولة الثانية هتشتغل).";
-        loginError.hidden = false;
-        return;
-      }
-      if (existing) {
-        if (existing.email !== email || existing.password !== password) {
-          loginError.textContent = "الإيميل أو الباسورد غير صحيح.";
-          loginError.hidden = false;
-          return;
-        }
       }
 
       const p = {
