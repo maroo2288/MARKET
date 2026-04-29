@@ -24,6 +24,9 @@
   const STORAGE_KEY = "tech_services_user_v1"; // fallback cache (لو Firebase مش متضبط)
   const PASS_RETRY_KEY = "tech_services_first_password_retry_done";
   const SESSION_KEY = "tech_services_logged_in";
+  const THEME_KEY = "tech_services_theme";
+  const LOGO_STYLE_KEY = "tech_services_logo_style";
+  const LOGIN_LANG_KEY = "tech_services_login_lang";
 
   const el = (id) => document.getElementById(id);
 
@@ -58,6 +61,19 @@
   const quickWhatsApp = el("quickWhatsApp");
   const quickEmail = el("quickEmail");
   const logoutBtn = el("logoutBtn");
+  const themeToggle = el("themeToggle");
+  const logoStyleSelect = el("logoStyleSelect");
+  const brandTitle = el("brandTitle");
+
+  const loginLangSelect = el("loginLangSelect");
+  const loginTitle = el("loginTitle");
+  const loginSubtitle = el("loginSubtitle");
+  const langLabel = el("langLabel");
+  const labelFullName = el("labelFullName");
+  const labelPhone = el("labelPhone");
+  const labelAddress = el("labelAddress");
+  const labelEmail = el("labelEmail");
+  const labelPassword = el("labelPassword");
 
   const footerWhatsApp = el("footerWhatsApp");
   const footerEmail = el("footerEmail");
@@ -82,6 +98,46 @@
 
   function isValidEmail(email) {
     return /\S+@\S+\.\S+/.test(email);
+  }
+
+  function applyTheme(theme) {
+    const t = theme === "dark" ? "dark" : "light";
+    document.body.setAttribute("data-theme", t);
+    if (themeToggle) themeToggle.textContent = t === "dark" ? "☀️" : "🌙";
+    localStorage.setItem(THEME_KEY, t);
+  }
+
+  function applyLogoStyle(style) {
+    const allowed = ["style1", "style2", "style3", "style4", "style5"];
+    const s = allowed.includes(style) ? style : "style1";
+    document.body.classList.remove(...allowed.map((x) => `logo-${x}`));
+    document.body.classList.add(`logo-${s}`);
+    if (logoStyleSelect) logoStyleSelect.value = s;
+    localStorage.setItem(LOGO_STYLE_KEY, s);
+  }
+
+  function applyLoginLanguage(lang) {
+    const isEn = lang === "en";
+    document.documentElement.lang = isEn ? "en" : "ar";
+    if (loginLangSelect) loginLangSelect.value = isEn ? "en" : "ar";
+    if (brandTitle) brandTitle.textContent = "Maroo";
+    if (loginTitle) loginTitle.textContent = isEn ? "Account" : "الحساب";
+    if (loginSubtitle) {
+      loginSubtitle.textContent = isEn
+        ? "Enter your info once to attach it to every inquiry."
+        : "اكتب بياناتك مرة واحدة عشان تتسجل تلقائيًا مع أي استفسار.";
+    }
+    if (langLabel) langLabel.textContent = isEn ? "Language" : "اللغة";
+    if (labelFullName) labelFullName.textContent = isEn ? "Full Name (3 parts)" : "الاسم الثلاثي";
+    if (labelPhone) labelPhone.textContent = isEn ? "Mobile Number (11 digits)" : "رقم الموبايل (11 رقم)";
+    if (labelAddress) labelAddress.textContent = isEn ? "Address" : "العنوان";
+    if (labelEmail) labelEmail.textContent = isEn ? "Email" : "البريد الإلكتروني";
+    if (labelPassword) labelPassword.textContent = isEn ? "Password" : "كلمة المرور";
+    if (forgotPasswordBtn) forgotPasswordBtn.textContent = isEn ? "Forgot password?" : "نسيت كلمة المرور؟";
+    if (logoutBtn) logoutBtn.textContent = isEn ? "Logout" : "تسجيل خروج";
+    if (quickWhatsApp) quickWhatsApp.textContent = isEn ? "WhatsApp" : "واتساب";
+    if (quickEmail) quickEmail.textContent = isEn ? "Email" : "البريد";
+    localStorage.setItem(LOGIN_LANG_KEY, isEn ? "en" : "ar");
   }
 
   function getProfile() {
@@ -843,6 +899,25 @@
 
     confirmClose.addEventListener("click", () => confirmModal.close());
 
+    if (themeToggle) {
+      themeToggle.addEventListener("click", () => {
+        const current = document.body.getAttribute("data-theme") || "light";
+        applyTheme(current === "dark" ? "light" : "dark");
+      });
+    }
+
+    if (logoStyleSelect) {
+      logoStyleSelect.addEventListener("change", () => {
+        applyLogoStyle(logoStyleSelect.value);
+      });
+    }
+
+    if (loginLangSelect) {
+      loginLangSelect.addEventListener("change", () => {
+        applyLoginLanguage(loginLangSelect.value);
+      });
+    }
+
     logoutBtn.addEventListener("click", () => {
       profileCache = null;
       sessionStorage.removeItem(SESSION_KEY);
@@ -1018,6 +1093,9 @@
 
   function boot() {
     initFirebaseIfPossible();
+    applyTheme(localStorage.getItem(THEME_KEY) || "light");
+    applyLogoStyle(localStorage.getItem(LOGO_STYLE_KEY) || "style1");
+    applyLoginLanguage(localStorage.getItem(LOGIN_LANG_KEY) || "ar");
     setQuickContacts();
     wireEvents();
     renderHome();
