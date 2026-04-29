@@ -15,6 +15,7 @@
   const FIREBASE_CONFIG_KEY = "tech_services_firebase_config_v1";
   const STORAGE_KEY = "tech_services_user_v1"; // fallback cache (لو Firebase مش متضبط)
   const PASS_RETRY_KEY = "tech_services_first_password_retry_done";
+  const SESSION_KEY = "tech_services_logged_in";
 
   const el = (id) => document.getElementById(id);
 
@@ -23,6 +24,15 @@
 
   const loginForm = el("loginForm");
   const loginError = el("loginError");
+  const forgotPasswordBtn = el("forgotPasswordBtn");
+  const resetModal = el("resetModal");
+  const resetForm = el("resetForm");
+  const resetEmail = el("resetEmail");
+  const resetPhone = el("resetPhone");
+  const resetPassword = el("resetPassword");
+  const resetPassword2 = el("resetPassword2");
+  const resetError = el("resetError");
+  const resetClose = el("resetClose");
 
   const setupModal = el("setupModal");
   const setupForm = el("setupForm");
@@ -88,7 +98,8 @@
 
   function ensureLogin() {
     const profile = profileCache || getProfile();
-    if (profile) return profile;
+    const loggedIn = sessionStorage.getItem(SESSION_KEY) === "1";
+    if (profile && loggedIn) return profile;
     loginModal.showModal();
     return null;
   }
@@ -830,10 +841,73 @@
 
     logoutBtn.addEventListener("click", () => {
       profileCache = null;
-      clearProfile();
+      sessionStorage.removeItem(SESSION_KEY);
       navStack = [];
       panel.hidden = true;
       loginModal.showModal();
+    });
+
+    forgotPasswordBtn.addEventListener("click", () => {
+      resetError.hidden = true;
+      resetForm.reset();
+      resetModal.showModal();
+    });
+
+    resetClose.addEventListener("click", () => resetModal.close());
+
+    resetForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      resetError.hidden = true;
+
+      const existing = getProfile();
+      if (!existing) {
+        resetError.textContent = "لا يوجد حساب محفوظ على هذا الجهاز.";
+        resetError.hidden = false;
+        return;
+      }
+
+      const email = String(resetEmail.value || "").trim();
+      const phone = normalizeDigits(resetPhone.value);
+      const newPass = String(resetPassword.value || "");
+      const newPass2 = String(resetPassword2.value || "");
+
+      if (!isValidEmail(email)) {
+        resetError.textContent = "اكتب بريد إلكتروني صحيح.";
+        resetError.hidden = false;
+        return;
+      }
+      if (!isValidEgyptMobile11(phone)) {
+        resetError.textContent = "رقم الموبايل غير صحيح.";
+        resetError.hidden = false;
+        return;
+      }
+      if (newPass.length < 6) {
+        resetError.textContent = "كلمة المرور لازم تكون 6 أحرف/أرقام على الأقل.";
+        resetError.hidden = false;
+        return;
+      }
+      if (newPass !== newPass2) {
+        resetError.textContent = "تأكيد كلمة المرور غير مطابق.";
+        resetError.hidden = false;
+        return;
+      }
+      if (existing.email !== email || existing.phone !== phone) {
+        resetError.textContent = "الإيميل أو رقم الموبايل غير مطابقين للبيانات المسجلة.";
+        resetError.hidden = false;
+        return;
+      }
+
+      const updated = {
+        ...existing,
+        password: newPass,
+        updatedAt: new Date().toISOString(),
+      };
+      setProfile(updated);
+      profileCache = updated;
+      saveProfileToFirebase(updated).catch(() => {});
+      resetModal.close();
+      loginError.textContent = "تم تغيير كلمة المرور بنجاح. ادخل بالباسورد الجديد.";
+      loginError.hidden = false;
     });
 
     loginForm.addEventListener("submit", (e) => {
@@ -872,16 +946,16 @@
         return;
       }
 
-      // حسب طلبك: أول محاولة باسورد تطلع خطأ مرة واحدة فقط
-      if (sessionStorage.getItem(PASS_RETRY_KEY) !== "done") {
-        sessionStorage.setItem(PASS_RETRY_KEY, "done");
+      const existing = getProfile();
+
+      // حسب طلبك: أول محاولة عند إنشاء الحساب فقط تطلع خطأ مرة واحدة
+      if (!existing && localStorage.getItem(PASS_RETRY_KEY) !== "done") {
+        localStorage.setItem(PASS_RETRY_KEY, "done");
         loginError.textContent =
           "كلمة المرور غير صحيحة. اكتبها مرة تانية (المحاولة الثانية هتشتغل).";
         loginError.hidden = false;
         return;
       }
-
-      const existing = getProfile();
       if (existing) {
         if (existing.email !== email || existing.password !== password) {
           loginError.textContent = "الإيميل أو الباسورد غير صحيح.";
@@ -900,6 +974,7 @@
       };
       setProfile(p);
       profileCache = p;
+      sessionStorage.setItem(SESSION_KEY, "1");
 
       saveProfileToFirebase(p).catch(() => {});
 
@@ -909,6 +984,10 @@
   }
 
   function wireSetup() {
+    if (!setupModal || !setupForm || !setupLater || !firebaseConfigInput || !setupError) {
+      return;
+    }
+
     setupLater.addEventListener("click", () => setupModal.close());
 
     setupForm.addEventListener("submit", (e) => {
@@ -937,11 +1016,11 @@
     initFirebaseIfPossible();
     setQuickContacts();
     wireEvents();
-    wireSetup();
     renderHome();
+    wireSetup();
 
     const profile = getProfile();
-    if (!profile) loginModal.showModal();
+    if (!profile || sessionStorage.getItem(SESSION_KEY) !== "1") loginModal.showModal();
 
     maybeShowSetup();
   }
