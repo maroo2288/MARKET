@@ -515,3 +515,97 @@ select.input {
   }
 }
 
+@media (max-width: 640px) {
+  .topbar {
+    padding: 10px 12px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar__brand {
+    min-width: 0;
+  }
+
+  .topbar__actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .chip {
+    flex: 1;
+    text-align: center;
+    padding: 10px 10px;
+    font-size: 0.93rem;
+  }
+
+  .container {
+    padding: 12px 10px 22px;
+  }
+
+  .hero__text h1 {
+    font-size: 1.45rem;
+    line-height: 1.3;
+  }
+
+  .hero__text p {
+    font-size: 0.95rem;
+    line-height: 1.8;
+  }
+
+  .card {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .card__title {
+    font-size: 1rem;
+  }
+
+  .card__desc {
+    font-size: 0.92rem;
+  }
+
+  .panel {
+    padding: 10px;
+  }
+
+  .panel__header {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .panel__title {
+    font-size: 1.07rem;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .modal {
+    width: calc(100% - 14px);
+  }
+
+  .modal__content {
+    padding: 12px;
+  }
+
+  .modal__title {
+    font-size: 1.05rem;
+  }
+
+  .modal__subtitle {
+    font-size: 0.92rem;
+  }
+
+  .input,
+  .textarea {
+    font-size: 16px;
+  }
+
+  .footer__items {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+

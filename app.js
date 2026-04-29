@@ -11,7 +11,15 @@
   // 2) فعل Authentication (Email/Password)
   // 3) اعمل Firestore Database
   // 4) حط بيانات config هنا بدل null
-  const FIREBASE_CONFIG = null;
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBLWoOfEwXty6oLVCRoEn0jkFsyArXp-Nk",
+    authDomain: "market-maroo.firebaseapp.com",
+    projectId: "market-maroo",
+    storageBucket: "market-maroo.firebasestorage.app",
+    messagingSenderId: "972296690748",
+    appId: "1:972296690748:web:92805be7fac72a16637739",
+    measurementId: "G-HD9E7SK4KC",
+  };
   const FIREBASE_CONFIG_KEY = "tech_services_firebase_config_v1";
   const STORAGE_KEY = "tech_services_user_v1"; // fallback cache (لو Firebase مش متضبط)
   const PASS_RETRY_KEY = "tech_services_first_password_retry_done";
@@ -126,12 +134,8 @@
   }
 
   function maybeShowSetup() {
-    const stored = localStorage.getItem(FIREBASE_CONFIG_KEY);
-    if (stored) return;
-    // لو Firebase config مش محطوط في الكود ومش محفوظ في المتصفح: اعرض شاشة الإعداد
-    if (!FIREBASE_CONFIG) {
-      setupModal.showModal();
-    }
+    // مع وجود config داخل الكود، نافذة الإعداد لا تظهر للمستخدمين.
+    return;
   }
 
   async function saveProfileToFirebase(profile) {
