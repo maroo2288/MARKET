@@ -24,7 +24,6 @@
   const STORAGE_KEY = "tech_services_user_v1"; // fallback cache (لو Firebase مش متضبط)
   const SESSION_KEY = "tech_services_logged_in";
   const THEME_KEY = "tech_services_theme";
-  const LOGO_STYLE_KEY = "tech_services_logo_style";
   const LOGIN_LANG_KEY = "tech_services_login_lang";
 
   const el = (id) => document.getElementById(id);
@@ -61,7 +60,6 @@
   const quickEmail = el("quickEmail");
   const logoutBtn = el("logoutBtn");
   const themeToggle = el("themeToggle");
-  const logoStyleSelect = el("logoStyleSelect");
   const brandTitle = el("brandTitle");
 
   const loginLangSelect = el("loginLangSelect");
@@ -111,8 +109,6 @@
     const s = allowed.includes(style) ? style : "style1";
     document.body.classList.remove(...allowed.map((x) => `logo-${x}`));
     document.body.classList.add(`logo-${s}`);
-    if (logoStyleSelect) logoStyleSelect.value = s;
-    localStorage.setItem(LOGO_STYLE_KEY, s);
   }
 
   function applyLoginLanguage(lang) {
@@ -950,12 +946,6 @@
       });
     }
 
-    if (logoStyleSelect) {
-      logoStyleSelect.addEventListener("change", () => {
-        applyLogoStyle(logoStyleSelect.value);
-      });
-    }
-
     if (loginLangSelect) {
       loginLangSelect.addEventListener("change", () => {
         applyLoginLanguage(loginLangSelect.value);
@@ -1139,7 +1129,7 @@
   function boot() {
     initFirebaseIfPossible();
     applyTheme(localStorage.getItem(THEME_KEY) || "light");
-    applyLogoStyle(localStorage.getItem(LOGO_STYLE_KEY) || "style1");
+    applyLogoStyle("style2");
     applyLoginLanguage(localStorage.getItem(LOGIN_LANG_KEY) || "ar");
     setQuickContacts();
     wireEvents();
