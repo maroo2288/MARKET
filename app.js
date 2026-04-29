@@ -13,6 +13,8 @@
   // 4) حط بيانات config هنا بدل null
   const FIREBASE_CONFIG = null;
   const FIREBASE_CONFIG_KEY = "tech_services_firebase_config_v1";
+  const REQUIRE_EMAIL_VERIFICATION = true;
+  const ACTION_URL = "https://maroo2288.github.io/MARKET/";
 
   const STORAGE_KEY = "tech_services_user_v1"; // fallback cache (لو Firebase مش متضبط)
 
@@ -97,6 +99,13 @@
     if (profile) return profile;
     loginModal.showModal();
     return null;
+  }
+
+  function getActionCodeSettings() {
+    return {
+      url: ACTION_URL,
+      handleCodeInApp: false,
+    };
   }
 
   function initFirebaseIfPossible() {
@@ -877,11 +886,22 @@
       loginError.hidden = true;
       try {
         if (!firebaseState.ok || !firebaseState.auth.currentUser) return;
-        await firebaseState.auth.currentUser.sendEmailVerification();
+        await firebaseState.auth.currentUser.sendEmailVerification(
+          getActionCodeSettings()
+        );
         verifyText.textContent =
           "تم إعادة إرسال رسالة التحقق. افتح بريدك واضغط Verify ثم ارجع واضغط “تم التحقق”.";
-      } catch {
-        loginError.textContent = "حصلت مشكلة أثناء إعادة الإرسال. جرّب تاني.";
+      } catch (err) {
+        const code = String(err && err.code ? err.code : "");
+        if (code === "auth/too-many-requests") {
+          loginError.textContent =
+            "تم حظر الإرسال مؤقتًا بسبب محاولات كثيرة. استنى 5 دقايق وجرب تاني.";
+        } else if (code === "auth/network-request-failed") {
+          loginError.textContent = "مشكلة في الإنترنت. تأكد من الاتصال وجرب تاني.";
+        } else {
+          loginError.textContent =
+            "حصلت مشكلة أثناء إعادة الإرسال. استنى دقيقة وجرب تاني.";
+        }
         loginError.hidden = false;
       }
     });
@@ -998,7 +1018,8 @@
               password
             );
 
-            await cred.user.sendEmailVerification();
+            // إرسال تحقق البريد مع Action URL للموقع
+            await cred.user.sendEmailVerification(getActionCodeSettings());
             await saveProfileToFirebase(cred.user, {
               fullName,
               phone: phoneDigits,
@@ -1006,10 +1027,35 @@
               createdAt: new Date().toISOString(),
             });
 
-            verifyBox.hidden = false;
-            verifyText.textContent =
-              "تم إرسال رسالة تحقق للبريد. افتحها واضغط Verify، ثم اضغط “تم التحقق” هنا.";
-            return;
+            if (REQUIRE_EMAIL_VERIFICATION) {
+              verifyBox.hidden = false;
+              verifyText.textContent =
+                "تم إرسال رسالة تحقق للبريد. افتحها واضغط Verify، ثم اضغط “تم التحقق” هنا.";
+              return;
+            }
+
+            // fallback (لو التحقق مش إجباري)
+            {
+              const p = await loadProfileFromFirebase(cred.user);
+              if (p) {
+                profileCache = p;
+                setProfile(p);
+              } else {
+                const fallback = {
+                  fullName,
+                  phone: phoneDigits,
+                  email,
+                  createdAt: new Date().toISOString(),
+                  uid: cred.user.uid,
+                  verified: Boolean(cred.user.emailVerified),
+                };
+                profileCache = fallback;
+                setProfile(fallback);
+              }
+              loginModal.close();
+              renderHome();
+              return;
+            }
           }
 
           const cred = await firebaseState.auth.signInWithEmailAndPassword(
@@ -1017,7 +1063,7 @@
             password
           );
 
-          if (!cred.user.emailVerified) {
+          if (REQUIRE_EMAIL_VERIFICATION && !cred.user.emailVerified) {
             verifyBox.hidden = false;
             verifyText.textContent =
               "حسابك موجود لكن البريد غير متحقق. افتح رسالة التحقق واضغط Verify ثم اضغط “تم التحقق”.";
@@ -1098,11 +1144,6 @@
         profileCache = null;
         const p = getProfile();
         if (!p) loginModal.showModal();
-        return;
-      }
-      if (!user.emailVerified) {
-        verifyBox.hidden = false;
-        loginModal.showModal();
         return;
       }
       const p = await loadProfileFromFirebase(user);
