@@ -1032,15 +1032,25 @@
           loginModal.close();
           renderHome();
         } catch (err) {
+          const code = String(err && err.code ? err.code : "");
           const msg = String(err && err.message ? err.message : "");
-          if (msg.includes("auth/email-already-in-use")) {
+          if (code === "auth/unauthorized-domain") {
+            loginError.textContent =
+              "الدومين غير مسموح به في Firebase. ادخل Firebase Console → Authentication → Settings → Authorized domains واضف: maroo2288.github.io";
+          } else if (code === "auth/email-already-in-use" || msg.includes("email-already-in-use")) {
             loginError.textContent =
               "البريد مستخدم قبل كده. اختار (تسجيل دخول) بدل (تسجيل جديد).";
-          } else if (msg.includes("auth/wrong-password")) {
+          } else if (code === "auth/wrong-password" || msg.includes("wrong-password")) {
             loginError.textContent = "كلمة المرور غير صحيحة.";
-          } else if (msg.includes("auth/user-not-found")) {
+          } else if (code === "auth/user-not-found" || msg.includes("user-not-found")) {
             loginError.textContent =
               "لا يوجد حساب بهذا البريد. استخدم (تسجيل جديد) أولًا.";
+          } else if (code === "auth/invalid-email") {
+            loginError.textContent = "البريد الإلكتروني غير صحيح.";
+          } else if (code === "auth/weak-password") {
+            loginError.textContent = "كلمة المرور ضعيفة. خليها 6 أحرف/أرقام على الأقل.";
+          } else if (code === "auth/network-request-failed") {
+            loginError.textContent = "مشكلة في الاتصال. تأكد من الإنترنت وجرب تاني.";
           } else {
             loginError.textContent =
               "حصل خطأ. تأكد من البيانات أو جرّب مرة أخرى.";
