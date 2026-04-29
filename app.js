@@ -13,10 +13,8 @@
   // 4) حط بيانات config هنا بدل null
   const FIREBASE_CONFIG = null;
   const FIREBASE_CONFIG_KEY = "tech_services_firebase_config_v1";
-  const REQUIRE_EMAIL_VERIFICATION = true;
-  const ACTION_URL = "https://maroo2288.github.io/MARKET/";
-
   const STORAGE_KEY = "tech_services_user_v1"; // fallback cache (لو Firebase مش متضبط)
+  const PASS_RETRY_KEY = "tech_services_first_password_retry_done";
 
   const el = (id) => document.getElementById(id);
 
@@ -25,15 +23,6 @@
 
   const loginForm = el("loginForm");
   const loginError = el("loginError");
-  const tabLogin = el("tabLogin");
-  const tabRegister = el("tabRegister");
-  const registerFields = el("registerFields");
-  const submitAuth = el("submitAuth");
-
-  const verifyBox = el("verifyBox");
-  const verifyText = el("verifyText");
-  const resendVerify = el("resendVerify");
-  const checkVerified = el("checkVerified");
 
   const setupModal = el("setupModal");
   const setupForm = el("setupForm");
@@ -62,7 +51,6 @@
 
   let navStack = [];
   let lastPayload = null;
-  let authMode = "login"; // login | register
   let profileCache = null;
   let firebaseState = { ok: false, auth: null, db: null, user: null };
 
@@ -72,6 +60,10 @@
 
   function isValidEgyptMobile11(phoneDigits) {
     return /^01\d{9}$/.test(phoneDigits);
+  }
+
+  function isValidEmail(email) {
+    return /\S+@\S+\.\S+/.test(email);
   }
 
   function getProfile() {
@@ -101,13 +93,6 @@
     return null;
   }
 
-  function getActionCodeSettings() {
-    return {
-      url: ACTION_URL,
-      handleCodeInApp: false,
-    };
-  }
-
   function initFirebaseIfPossible() {
     try {
       if (!window.firebase) return;
@@ -120,7 +105,7 @@
       }
       firebaseState = {
         ok: true,
-        auth: window.firebase.auth(),
+        auth: null,
         db: window.firebase.firestore(),
         user: null,
       };
@@ -138,31 +123,17 @@
     }
   }
 
-  async function loadProfileFromFirebase(user) {
-    if (!firebaseState.ok || !user) return null;
-    const doc = await firebaseState.db.collection("users").doc(user.uid).get();
-    const data = doc.exists ? doc.data() : null;
-    if (!data) return null;
-    return {
-      fullName: data.fullName || "",
-      phone: data.phone || "",
-      email: user.email || data.email || "",
-      createdAt: data.createdAt || null,
-      uid: user.uid,
-      verified: Boolean(user.emailVerified),
-    };
-  }
-
-  async function saveProfileToFirebase(user, profile) {
-    if (!firebaseState.ok || !user) return;
+  async function saveProfileToFirebase(profile) {
+    if (!firebaseState.ok) return;
     await firebaseState.db
       .collection("users")
-      .doc(user.uid)
+      .doc(profile.phone)
       .set(
         {
           fullName: profile.fullName,
           phone: profile.phone,
-          email: profile.email,
+          address: profile.address || "",
+          email: profile.email || "",
           createdAt: profile.createdAt || new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -181,9 +152,7 @@
       message: payload.message || "",
       fullName: payload.fullName || "",
       phone: payload.phone || "",
-      email: payload.email || "",
-      uid: payload.uid || null,
-      verified: Boolean(payload.verified),
+      address: payload.address || "",
     });
   }
 
@@ -204,7 +173,8 @@
       "",
       `الاسم: ${payload.fullName}`,
       `الموبايل: ${payload.phone}`,
-      `الإيميل: ${payload.email}`,
+      `العنوان: ${payload.address || "-"}`,
+      `الإيميل: ${payload.email || "-"}`,
       "",
       `القسم: ${payload.section}`,
     ];
@@ -861,253 +831,81 @@
     logoutBtn.addEventListener("click", () => {
       profileCache = null;
       clearProfile();
-      if (firebaseState.ok) {
-        firebaseState.auth.signOut().catch(() => {});
-      }
       navStack = [];
       panel.hidden = true;
       loginModal.showModal();
     });
 
-    function setAuthMode(mode) {
-      authMode = mode;
-      tabLogin.classList.toggle("is-active", mode === "login");
-      tabRegister.classList.toggle("is-active", mode === "register");
-      registerFields.hidden = mode !== "register";
-      submitAuth.textContent = mode === "register" ? "تسجيل جديد" : "دخول";
-      verifyBox.hidden = true;
-      loginError.hidden = true;
-    }
-
-    tabLogin.addEventListener("click", () => setAuthMode("login"));
-    tabRegister.addEventListener("click", () => setAuthMode("register"));
-
-    resendVerify.addEventListener("click", async () => {
-      loginError.hidden = true;
-      try {
-        if (!firebaseState.ok || !firebaseState.auth.currentUser) return;
-        await firebaseState.auth.currentUser.sendEmailVerification(
-          getActionCodeSettings()
-        );
-        verifyText.textContent =
-          "تم إعادة إرسال رسالة التحقق. افتح بريدك واضغط Verify ثم ارجع واضغط “تم التحقق”.";
-      } catch (err) {
-        const code = String(err && err.code ? err.code : "");
-        if (code === "auth/too-many-requests") {
-          loginError.textContent =
-            "تم حظر الإرسال مؤقتًا بسبب محاولات كثيرة. استنى 5 دقايق وجرب تاني.";
-        } else if (code === "auth/network-request-failed") {
-          loginError.textContent = "مشكلة في الإنترنت. تأكد من الاتصال وجرب تاني.";
-        } else {
-          loginError.textContent =
-            "حصلت مشكلة أثناء إعادة الإرسال. استنى دقيقة وجرب تاني.";
-        }
-        loginError.hidden = false;
-      }
-    });
-
-    checkVerified.addEventListener("click", async () => {
-      loginError.hidden = true;
-      try {
-        if (!firebaseState.ok || !firebaseState.auth.currentUser) return;
-        await firebaseState.auth.currentUser.reload();
-        if (!firebaseState.auth.currentUser.emailVerified) {
-          loginError.textContent =
-            "لسه مش متحقق. افتح رسالة التحقق واضغط Verify أولًا.";
-          loginError.hidden = false;
-          return;
-        }
-        verifyBox.hidden = true;
-        const p = await loadProfileFromFirebase(firebaseState.auth.currentUser);
-        if (p) {
-          profileCache = p;
-          setProfile(p);
-        }
-        loginModal.close();
-        renderHome();
-      } catch {
-        loginError.textContent = "حصل خطأ أثناء التحقق. جرّب تاني.";
-        loginError.hidden = false;
-      }
-    });
-
     loginForm.addEventListener("submit", (e) => {
       e.preventDefault();
       loginError.hidden = true;
-
+      const fullName = String(el("fullName").value || "").trim();
+      const phoneDigits = normalizeDigits(el("phone").value);
+      const address = String(el("address").value || "").trim();
       const email = String(el("email").value || "").trim();
       const password = String(el("password").value || "");
 
-      if (!email.includes("@") || !email.includes(".")) {
+      if (!fullName || fullName.split(/\s+/).length < 3) {
+        loginError.textContent = "اكتب الاسم الثلاثي (3 كلمات على الأقل).";
+        loginError.hidden = false;
+        return;
+      }
+      if (!isValidEgyptMobile11(phoneDigits)) {
+        loginError.textContent =
+          "رقم الموبايل لازم يكون 11 رقم ويبدأ بـ 01 (مثال: 01201016897).";
+        loginError.hidden = false;
+        return;
+      }
+      if (!address) {
+        loginError.textContent = "اكتب العنوان.";
+        loginError.hidden = false;
+        return;
+      }
+      if (!isValidEmail(email)) {
         loginError.textContent = "اكتب بريد إلكتروني صحيح.";
         loginError.hidden = false;
         return;
       }
-
-      if (password.length < 4) {
-        loginError.textContent = "كلمة المرور قصيرة جدًا (4 أحرف/أرقام على الأقل).";
+      if (password.length < 6) {
+        loginError.textContent = "الباسورد لازم يكون 6 أحرف/أرقام على الأقل.";
         loginError.hidden = false;
         return;
       }
 
-      const fullName = String(el("fullName").value || "").trim();
-      const phoneDigits = normalizeDigits(el("phone").value);
-
-      const fallbackLocalLogin = () => {
-        if (authMode === "register") {
-          if (!fullName || fullName.split(/\s+/).length < 3) {
-            loginError.textContent = "اكتب الاسم الثلاثي (3 كلمات على الأقل).";
-            loginError.hidden = false;
-            return;
-          }
-          if (!isValidEgyptMobile11(phoneDigits)) {
-            loginError.textContent =
-              "رقم الموبايل لازم يكون 11 رقم ويبدأ بـ 01 (مثال: 01201016897).";
-            loginError.hidden = false;
-            return;
-          }
-          const p = {
-            fullName,
-            phone: phoneDigits,
-            email,
-            createdAt: new Date().toISOString(),
-            verified: false,
-          };
-          setProfile(p);
-          profileCache = p;
-          loginModal.close();
-          renderHome();
-          return;
-        }
-
-        // login mode (local): نسمح بالدخول لو فيه بيانات مخزنة لنفس البريد
-        const p = getProfile();
-        if (!p || p.email !== email) {
-          loginError.textContent =
-            "لا يوجد حساب محلي بهذا البريد. استخدم (تسجيل جديد) أولًا.";
-          loginError.hidden = false;
-          return;
-        }
-        profileCache = p;
-        loginModal.close();
-        renderHome();
-      };
-
-      if (!firebaseState.ok) {
-        fallbackLocalLogin();
+      // حسب طلبك: أول محاولة باسورد تطلع خطأ مرة واحدة فقط
+      if (sessionStorage.getItem(PASS_RETRY_KEY) !== "done") {
+        sessionStorage.setItem(PASS_RETRY_KEY, "done");
+        loginError.textContent =
+          "كلمة المرور غير صحيحة. اكتبها مرة تانية (المحاولة الثانية هتشتغل).";
+        loginError.hidden = false;
         return;
       }
 
-      (async () => {
-        try {
-          if (authMode === "register") {
-            if (!fullName || fullName.split(/\s+/).length < 3) {
-              loginError.textContent = "اكتب الاسم الثلاثي (3 كلمات على الأقل).";
-              loginError.hidden = false;
-              return;
-            }
-            if (!isValidEgyptMobile11(phoneDigits)) {
-              loginError.textContent =
-                "رقم الموبايل لازم يكون 11 رقم ويبدأ بـ 01 (مثال: 01201016897).";
-              loginError.hidden = false;
-              return;
-            }
-
-            const cred = await firebaseState.auth.createUserWithEmailAndPassword(
-              email,
-              password
-            );
-
-            // إرسال تحقق البريد مع Action URL للموقع
-            await cred.user.sendEmailVerification(getActionCodeSettings());
-            await saveProfileToFirebase(cred.user, {
-              fullName,
-              phone: phoneDigits,
-              email,
-              createdAt: new Date().toISOString(),
-            });
-
-            if (REQUIRE_EMAIL_VERIFICATION) {
-              verifyBox.hidden = false;
-              verifyText.textContent =
-                "تم إرسال رسالة تحقق للبريد. افتحها واضغط Verify، ثم اضغط “تم التحقق” هنا.";
-              return;
-            }
-
-            // fallback (لو التحقق مش إجباري)
-            {
-              const p = await loadProfileFromFirebase(cred.user);
-              if (p) {
-                profileCache = p;
-                setProfile(p);
-              } else {
-                const fallback = {
-                  fullName,
-                  phone: phoneDigits,
-                  email,
-                  createdAt: new Date().toISOString(),
-                  uid: cred.user.uid,
-                  verified: Boolean(cred.user.emailVerified),
-                };
-                profileCache = fallback;
-                setProfile(fallback);
-              }
-              loginModal.close();
-              renderHome();
-              return;
-            }
-          }
-
-          const cred = await firebaseState.auth.signInWithEmailAndPassword(
-            email,
-            password
-          );
-
-          if (REQUIRE_EMAIL_VERIFICATION && !cred.user.emailVerified) {
-            verifyBox.hidden = false;
-            verifyText.textContent =
-              "حسابك موجود لكن البريد غير متحقق. افتح رسالة التحقق واضغط Verify ثم اضغط “تم التحقق”.";
-            return;
-          }
-
-          const p = await loadProfileFromFirebase(cred.user);
-          if (p) {
-            profileCache = p;
-            setProfile(p);
-          }
-          loginModal.close();
-          renderHome();
-        } catch (err) {
-          const code = String(err && err.code ? err.code : "");
-          const msg = String(err && err.message ? err.message : "");
-          if (code === "auth/unauthorized-domain") {
-            loginError.textContent =
-              "الدومين غير مسموح به في Firebase. ادخل Firebase Console → Authentication → Settings → Authorized domains واضف: maroo2288.github.io";
-          } else if (code === "auth/email-already-in-use" || msg.includes("email-already-in-use")) {
-            loginError.textContent =
-              "البريد مستخدم قبل كده. اختار (تسجيل دخول) بدل (تسجيل جديد).";
-          } else if (code === "auth/wrong-password" || msg.includes("wrong-password")) {
-            loginError.textContent = "كلمة المرور غير صحيحة.";
-          } else if (code === "auth/user-not-found" || msg.includes("user-not-found")) {
-            loginError.textContent =
-              "لا يوجد حساب بهذا البريد. استخدم (تسجيل جديد) أولًا.";
-          } else if (code === "auth/invalid-email") {
-            loginError.textContent = "البريد الإلكتروني غير صحيح.";
-          } else if (code === "auth/weak-password") {
-            loginError.textContent = "كلمة المرور ضعيفة. خليها 6 أحرف/أرقام على الأقل.";
-          } else if (code === "auth/network-request-failed") {
-            loginError.textContent = "مشكلة في الاتصال. تأكد من الإنترنت وجرب تاني.";
-          } else {
-            loginError.textContent =
-              "حصل خطأ. تأكد من البيانات أو جرّب مرة أخرى.";
-          }
+      const existing = getProfile();
+      if (existing) {
+        if (existing.email !== email || existing.password !== password) {
+          loginError.textContent = "الإيميل أو الباسورد غير صحيح.";
           loginError.hidden = false;
+          return;
         }
-      })();
-    });
+      }
 
-    // default
-    setAuthMode("login");
+      const p = {
+        fullName,
+        phone: phoneDigits,
+        address,
+        email,
+        password,
+        createdAt: new Date().toISOString(),
+      };
+      setProfile(p);
+      profileCache = p;
+
+      saveProfileToFirebase(p).catch(() => {});
+
+      loginModal.close();
+      renderHome();
+    });
   }
 
   function wireSetup() {
@@ -1126,30 +924,11 @@
         setupModal.close();
         // إعادة تهيئة Firebase بعد الحفظ
         initFirebaseIfPossible();
-        bootAuthListener();
-        alert("تم حفظ الإعدادات. دلوقتي التحقق والتخزين شغالين.");
+        alert("تم حفظ الإعدادات. دلوقتي حفظ البيانات والاستفسارات شغال.");
       } catch {
         setupError.textContent =
           "صيغة غير صحيحة. الصق Firebase config كـ JSON كامل (يبدأ بـ { وينتهي بـ }).";
         setupError.hidden = false;
-      }
-    });
-  }
-
-  function bootAuthListener() {
-    if (!firebaseState.ok) return;
-    firebaseState.auth.onAuthStateChanged(async (user) => {
-      firebaseState.user = user || null;
-      if (!user) {
-        profileCache = null;
-        const p = getProfile();
-        if (!p) loginModal.showModal();
-        return;
-      }
-      const p = await loadProfileFromFirebase(user);
-      if (p) {
-        profileCache = p;
-        setProfile(p);
       }
     });
   }
@@ -1160,8 +939,6 @@
     wireEvents();
     wireSetup();
     renderHome();
-
-    if (firebaseState.ok) bootAuthListener();
 
     const profile = getProfile();
     if (!profile) loginModal.showModal();
