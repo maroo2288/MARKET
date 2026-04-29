@@ -374,6 +374,7 @@ select.input {
   display: flex;
   flex-wrap: wrap;
   gap: 12px 16px;
+  align-items: center;
 }
 
 .link {
@@ -384,6 +385,27 @@ select.input {
 
 .link:hover {
   text-decoration: underline;
+}
+
+.contact-icon {
+  width: 46px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 1.25rem;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  transition: transform 0.08s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.contact-icon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.14);
+  background: rgba(219, 234, 254, 0.7);
 }
 
 .footer__hint {
