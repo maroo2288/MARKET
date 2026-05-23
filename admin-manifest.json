@@ -1,0 +1,26 @@
+{
+  "name": "Maroo Admin — لوحة التحكم",
+  "short_name": "Maroo Admin",
+  "description": "لوحة تحكم Maroo الإدارية",
+  "start_url": "./admin.html",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#D4AF37",
+  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "./admin-icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./admin-icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
