@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سوق نت - إعلانات مبوبة</title>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --primary:#E84C1E;--primary-dark:#c03d12;--primary-light:#fff0ec;
+    --gold:#F5A623;--surface:var(--color-background-primary, #ffffff);
+    --surface2:var(--color-background-secondary, #f8f9fa);
+    --surface3:var(--color-background-tertiary, #f1f3f5);
+    --text:var(--color-text-primary, #1a1a1a);
+    --text2:var(--color-text-secondary, #666666);
+    --border:var(--color-border-tertiary, #eaeaea);
+    --border2:var(--color-border-secondary, #dddddd);
+    --radius:10px;--radius-lg:16px;--shadow:0 1px 3px rgba(0,0,0,0.08);
+  }
+  body{font-family:'Cairo',sans-serif;color:var(--text);background:var(--surface3);direction:rtl; overflow-x: hidden;}
+
+  /* تأثيرات الظهور */
+  .page{display:none;animation:fadeIn 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)}
+  .page.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  
+  @keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* TOPBAR - تأثير زجاجي حديث */
+  .topbar {
+    background: rgba(232, 76, 30, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; 
+    height: 64px; position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  }
+  .logo{font-family:'Tajawal',sans-serif;font-size:22px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+  .logo-dot{width:10px;height:10px;background:var(--gold);border-radius:50%}
+  .nav{display:flex;align-items:center;gap:6px}
+  .nav-btn{background:rgba(255,255,255,0.15);border:none;color:#fff;font-family:'Cairo',sans-serif;font-size:13px;font-weight:500;padding:7px 14px;border-radius:20px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:5px}
+  .nav-btn:hover{background:rgba(255,255,255,0.25)}
+  .nav-btn.active{background:#fff;color:var(--primary)}
+  .post-btn{background:#fff;color:var(--primary);font-weight:700;border:none;font-family:'Cairo',sans-serif;font-size:13px;padding:8px 18px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all 0.2s}
+  .post-btn:hover{background:#f5f5f5;transform:translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
+  
+  /* BADGE - نبض مستمر */
+  .badge {
+    background: var(--gold); color: #fff; border-radius: 50%; 
+    width: 18px; height: 18px; font-size: 10px; display: flex; 
+    align-items: center; justify-content: center; font-weight: 700; 
+    margin-right: -4px;
+    animation: pulseGlow 2s infinite;
+  }
+  @keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(245, 166, 35, 0); }
+    100% { box-shadow: 0 0 0 0; }
+  }
+
+  /* HERO - تدرج لوني متحرك 3D */
+  .hero {
+    background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #E84C1E);
+    background-size: 400% 400%;
+    animation: gradientMove 12s ease infinite;
+    padding: 3.5rem 1.5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  @keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .hero h1{font-family:'Tajawal',sans-serif;font-size:28px;font-weight:700;color:#fff;margin-bottom:8px}
+  .hero p{font-size:15px;color:rgba(255,255,255,0.8);margin-bottom:1.8rem}
+  
+  /* شريط البحث */
+  .search-bar{background:#fff;border-radius:12px;display:flex;align-items:center;max-width:680px;margin:0 auto;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,0.2); transition:all 0.3s ease; border: 2px solid transparent;}
+  .search-bar:focus-within { transform: scale(1.02); box-shadow: 0 15px 35px rgba(0,0,0,0.3); border-color: var(--primary); }
+  .search-bar input{flex:1;border:none;outline:none;padding:16px 20px;font-family:'Cairo',sans-serif;font-size:15px;background:transparent;color:#222}
+  .search-bar select{border:none;border-right:1px solid #eee;border-left:1px solid #eee;outline:none;padding:16px 14px;font-family:'Cairo',sans-serif;font-size:14px;background:#f9f9f9;color:#555;cursor:pointer}
+  .search-bar button{background:var(--primary);border:none;color:#fff;padding:16px 26px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background 0.2s}
+  .search-bar button:hover{background:var(--primary-dark)}
+
+  /* STATS BAR */
+  .stats-bar{background:var(--surface);border-bottom:0.5px solid var(--border);padding:12px 1.5rem;display:flex;align-items:center;justify-content:center;gap:30px;overflow-x:auto}
+  .stat-item{display:flex;align-items:center;gap:8px;white-space:nowrap;font-size:14px;color:var(--text2)}
+  .stat-item strong{color:var(--primary);font-size:16px}
+
+  /* CATEGORIES & SECTIONS */
+  .section{padding:2rem 1.5rem; max-width: 1200px; margin: 0 auto;}
+  .section-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:1.2rem;display:flex;align-items:center;gap:10px}
+  .section-title::before{content:'';width:5px;height:22px;background:var(--primary);border-radius:3px;display:block}
+  .categories-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:15px}
+  
+  .cat-card {
+    background: var(--surface); border: 1px solid var(--border); 
+    border-radius: var(--radius); padding: 16px 10px; text-align: center; 
+    cursor: pointer; 
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+  .cat-card:hover {
+    border-color: var(--primary); background: var(--primary-light); 
+    transform: translateY(-5px); 
+    box-shadow: 0 10px 20px rgba(232, 76, 30, 0.1);
+  }
+  .cat-icon{font-size:30px;margin-bottom:8px}
+  .cat-name{font-size:13px;font-weight:600;color:var(--text)}
+  .cat-count{font-size:11px;color:var(--text2);margin-top:4px}
+
+  /* ADS GRID & CARDS */
+  .ads-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+  
+  .ad-card {
+    background: var(--surface); border: 1px solid var(--border); 
+    border-radius: var(--radius-lg); overflow: hidden; cursor: pointer; 
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .ad-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(232, 76, 30, 0.12);
+    border-color: var(--primary);
+  }
+  .ad-img{width:100%;height:160px;object-fit:cover;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:48px}
+  .ad-body{padding:14px}
+  .ad-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .ad-price{font-size:18px;font-weight:700;color:var(--primary);margin-bottom:8px}
+  .ad-price span{font-size:13px;font-weight:400;color:var(--text2)}
+  .ad-meta{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text2)}
+  .ad-meta i{font-size:14px;vertical-align:-2px;margin-left:4px}
+  .fav-btn{position:absolute;top:10px;left:10px;background:rgba(255,255,255,0.9);border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);box-shadow: 0 2px 5px rgba(0,0,0,0.1)}
+  .fav-btn:hover{transform:scale(1.2)}
+  .fav-btn.active{color:var(--primary)}
+  .featured-badge{position:absolute;top:10px;right:10px;background:var(--gold);color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:12px;box-shadow: 0 2px 5px rgba(0,0,0,0.1)}
+
+  /* تفاعل عام للأزرار */
+  button:active, .ad-card:active { transform: scale(0.95) !important; }
+
+  /* BROWSE PAGE FILTERS */
+  .browse-layout{display:grid;grid-template-columns:250px 1fr;gap:24px;padding:2rem 1.5rem; max-width: 1200px; margin: 0 auto;}
+  .filters-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;height:fit-content;position:sticky;top:84px; box-shadow: var(--shadow)}
+  .filter-title{font-size:15px;font-weight:700;margin-bottom:1.2rem;padding-bottom:10px;border-bottom:1px solid var(--border)}
+  .filter-group{margin-bottom:1.5rem}
+  .filter-group label{font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:8px;}
+  .filter-group select,.filter-group input[type="text"],.filter-group input[type="number"]{width:100%;border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-family:'Cairo',sans-serif;font-size:14px;background:var(--surface);color:var(--text);outline:none; transition: all 0.3s;}
+  .filter-group select:focus,.filter-group input:focus{border-color:var(--primary); box-shadow: 0 0 0 3px rgba(232, 76, 30, 0.1);}
+  .price-range{display:flex;gap:10px;align-items:center}
+  .price-range span{color:var(--text2);font-size:14px}
+  .price-range input{flex:1}
+  .filter-check{display:flex;align-items:center;gap:10px;font-size:14px;margin-bottom:8px;cursor:pointer; color: var(--text)}
+  .filter-check input{accent-color:var(--primary);width:18px;height:18px; cursor: pointer;}
+  .apply-filter{width:100%;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.3s; margin-top: 10px;}
+  .apply-filter:hover{background:var(--primary-dark); box-shadow: 0 4px 10px rgba(232, 76, 30, 0.2);}
+  .results-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+  .results-count{font-size:15px;color:var(--text2)}
+  .sort-select{border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-family:'Cairo',sans-serif;font-size:14px;background:var(--surface);color:var(--text);outline:none;cursor:pointer}
+
+  /* POST AD FORM */
+  .post-container{max-width:750px;margin:0 auto;padding:2rem 1.5rem}
+  .post-steps{display:flex;align-items:center;gap:0;margin-bottom:2.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden; box-shadow: var(--shadow)}
+  .step{flex:1;padding:14px;text-align:center;font-size:13px;font-weight:600;color:var(--text2);position:relative;cursor:pointer; transition: all 0.3s;}
+  .step.active{background:var(--primary);color:#fff}
+  .step.done{background:var(--primary-light);color:var(--primary)}
+  .step-num{width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,0.1);display:inline-flex;align-items:center;justify-content:center;font-size:12px;margin-bottom:6px}
+  .step.active .step-num{background:rgba(255,255,255,0.3)}
+  .post-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.8rem;margin-bottom:1.5rem; box-shadow: var(--shadow)}
+  .post-card h3{font-size:16px;font-weight:700;margin-bottom:1.5rem;padding-bottom:12px;border-bottom:1px solid var(--border)}
+  .form-group{margin-bottom:1.5rem}
+  .form-label{font-size:14px;font-weight:600;color:var(--text);display:block;margin-bottom:8px}
+  .form-label span{color:var(--primary)}
+  .form-input{width:100%;border:1px solid var(--border2);border-radius:8px;padding:12px 16px;font-family:'Cairo',sans-serif;font-size:14px;background:var(--surface);color:var(--text);outline:none;transition:all 0.3s}
+  .form-input:focus{border-color:var(--primary);box-shadow: 0 0 0 3px rgba(232, 76, 30, 0.1);}
+  textarea.form-input{resize:vertical;min-height:120px;line-height:1.6}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .img-upload{border:2px dashed var(--border2);border-radius:var(--radius);padding:3rem;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--surface2)}
+  .img-upload:hover{border-color:var(--primary);background:var(--primary-light)}
+  .img-upload-icon{font-size:40px;margin-bottom:10px;color:var(--text2)}
+  .img-upload p{font-size:14px;color:var(--text); font-weight: 600;}
+  .img-upload small{font-size:12px;color:var(--text2);display:block;margin-top:6px}
+  .phone-group{display:flex;align-items:center;gap:0;border:1px solid var(--border2);border-radius:8px;overflow:hidden; transition: all 0.3s;}
+  .phone-group:focus-within{border-color:var(--primary);box-shadow: 0 0 0 3px rgba(232, 76, 30, 0.1);}
+  .phone-prefix{background:var(--surface2);padding:12px 14px;font-size:14px;color:var(--text2);border-left:1px solid var(--border2)}
+  .phone-group input{flex:1;border:none;padding:12px 14px;font-family:'Cairo',sans-serif;font-size:14px;background:var(--surface);color:var(--text);outline:none}
+  .submit-btn{width:100%;background:var(--primary);color:#fff;border:none;border-radius:10px;padding:16px;font-family:'Cairo',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.3s;display:flex;align-items:center;justify-content:center;gap:8px; box-shadow: 0 4px 15px rgba(232, 76, 30, 0.3)}
+  .submit-btn:hover{background:var(--primary-dark);transform:translateY(-2px)}
+
+  /* MESSAGES */
+  .messages-layout{display:grid;grid-template-columns:300px 1fr;height:calc(100vh - 64px);background:var(--surface)}
+  .chats-sidebar{border-left:1px solid var(--border);overflow-y:auto; background: var(--surface);}
+  .chats-header{padding:1.2rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1}
+  .chats-header h3{font-size:16px;font-weight:700;margin-bottom:12px}
+  .chats-header input{width:100%;border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-family:'Cairo',sans-serif;font-size:13px;background:var(--surface2);color:var(--text);outline:none}
+  .chat-item{padding:14px 1.2rem;display:flex;align-items:center;gap:12px;cursor:pointer;border-bottom:1px solid var(--border);transition:all 0.2s;position:relative}
+  .chat-item:hover{background:var(--surface2)}
+  .chat-item.active{background:var(--primary-light); border-right: 3px solid var(--primary);}
+  .chat-avatar{width:46px;height:46px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;border:1px solid var(--border)}
+  .chat-info{flex:1;min-width:0}
+  .chat-name{font-size:14px;font-weight:700;margin-bottom:4px}
+  .chat-preview{font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chat-meta{text-align:left;flex-shrink:0}
+  .chat-time{font-size:11px;color:var(--text2)}
+  .chat-unread{background:var(--primary);color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:6px;margin-right:auto; animation: pulseGlow 2s infinite;}
+  .chat-window{display:flex;flex-direction:column;height:100%}
+  .chat-topbar{padding:14px 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;background:var(--surface)}
+  .chat-topbar-info{flex:1}
+  .chat-topbar-info h4{font-size:15px;font-weight:700}
+  .chat-topbar-info p{font-size:13px;color:var(--text2)}
+  .chat-actions{display:flex;gap:8px}
+  .icon-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:18px;color:var(--text2);transition:all 0.2s;line-height:1}
+  .icon-btn:hover{background:var(--surface3);color:var(--text); transform: translateY(-2px);}
+  .messages-area{flex:1;overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;gap:12px;background:var(--surface3)}
+  .msg{max-width:70%;display:flex;flex-direction:column;gap:4px; animation: slideUpFade 0.3s ease forwards;}
+  .msg.sent{align-self:flex-start}
+  .msg.received{align-self:flex-end}
+  .msg-bubble{padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.6; box-shadow: var(--shadow)}
+  .msg.sent .msg-bubble{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:18px 18px 4px 18px}
+  .msg.received .msg-bubble{background:var(--primary);color:#fff;border-radius:18px 18px 18px 4px}
+  .msg-time{font-size:11px;color:var(--text2)}
+  .msg.received .msg-time{text-align:left;color:rgba(255,255,255,0.7);align-self:flex-end}
+  .msg-ad-preview{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer;transition:all 0.2s; box-shadow: var(--shadow)}
+  .msg-ad-preview:hover{transform: translateY(-2px); border-color: var(--primary);}
+  .msg-ad-img{font-size:28px;width:48px;height:48px;background:var(--surface2);border-radius:10px;display:flex;align-items:center;justify-content:center}
+  .msg-ad-info p{font-size:13px;font-weight:700;color:var(--text)}
+  .msg-ad-info span{font-size:14px;font-weight:700;color:var(--primary)}
+  .msg-input-bar{padding:14px 1.5rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface)}
+  .msg-input-bar input{flex:1;border:1px solid var(--border2);border-radius:24px;padding:12px 18px;font-family:'Cairo',sans-serif;font-size:14px;background:var(--surface2);color:var(--text);outline:none; transition: all 0.3s;}
+  .msg-input-bar input:focus{border-color:var(--primary);background:var(--surface); box-shadow: 0 0 0 3px rgba(232, 76, 30, 0.1);}
+  .send-btn{background:var(--primary);color:#fff;border:none;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;flex-shrink:0;transition:all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 4px 10px rgba(232, 76, 30, 0.3)}
+  .send-btn:hover{background:var(--primary-dark);transform:scale(1.1)}
+  .attach-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:all 0.2s;flex-shrink:0}
+  .attach-btn:hover{background:var(--surface3); color: var(--primary);}
+
+  /* AD DETAIL PAGE (New) */
+  .ad-detail{max-width:1000px;margin:0 auto;padding:2rem 1.5rem;display:grid;grid-template-columns:1fr 350px;gap:2rem;align-items:start}
+  .ad-gallery{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:1.5rem; box-shadow: var(--shadow)}
+  .ad-main-img{width:100%;height:350px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:100px; transition: all 0.3s;}
+  .ad-thumbs{display:flex;gap:10px;padding:14px}
+  .ad-thumb{width:70px;height:70px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;border:2px solid transparent; transition: all 0.2s;}
+  .ad-thumb.active{border-color:var(--primary); background: var(--primary-light);}
+  .ad-info-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.8rem;margin-bottom:1.5rem; box-shadow: var(--shadow)}
+  .ad-info-card h2{font-size:20px;font-weight:700;margin-bottom:10px; line-height: 1.4;}
+  .ad-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--text2); font-weight: 600;}
+  .ad-desc{font-size:15px;line-height:1.8;color:var(--text)}
+  .specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:0; margin-top: 10px;}
+  .spec-row{padding:12px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:14px}
+  .spec-row:last-child{border-bottom:none}
+  .spec-label{color:var(--text2)}
+  .spec-val{font-weight:700}
+  
+  .seller-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.8rem;position:sticky;top:84px; box-shadow: var(--shadow)}
+  .ad-price-big{font-size:32px;font-weight:700;color:var(--primary);margin-bottom:20px; text-align: center; background: var(--primary-light); padding: 10px; border-radius: var(--radius);}
+  .seller-header{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)}
+  .seller-avatar{width:56px;height:56px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:26px;border:2px solid var(--primary)}
+  .seller-name{font-weight:700;font-size:16px}
+  .seller-meta{font-size:13px;color:var(--text2);margin-top:4px}
+  .contact-btns{display:flex;flex-direction:column;gap:10px}
+  .btn-call{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:14px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.3s;width:100%; box-shadow: 0 4px 10px rgba(232, 76, 30, 0.2)}
+  .btn-call:hover{background:var(--primary-dark); transform: translateY(-2px);}
+  .btn-msg{background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:10px;padding:14px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.3s;width:100%}
+  .btn-msg:hover{background:var(--surface3); border-color: var(--primary); color: var(--primary);}
+  .safety-tip{background:var(--surface2);border:1px solid #ffeeba; border-left: 4px solid #ffc107; border-radius:8px;padding:12px 14px;font-size:12px;color:#856404;margin-top:16px;line-height:1.6}
+
+  /* SUCCESS TOAST */
+  .toast{position:fixed;bottom:30px;right:30px;background:#1a1a1a;color:#fff;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;z-index:1000;transform:translateY(100px);opacity:0;transition:all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 30px rgba(0,0,0,0.2)}
+  .toast.show{transform:translateY(0);opacity:1}
+  .toast i{color:#4ade80;font-size:20px}
+
+  @media(max-width:768px){
+    .browse-layout{grid-template-columns:1fr}
+    .filters-panel{display:none}
+    .ad-detail{grid-template-columns:1fr}
+    .messages-layout{grid-template-columns:1fr}
+    .chats-sidebar{display:none}
+    .stats-bar { justify-content: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<h1 class="sr-only" style="display:none;">موقع إعلانات مبوبة - نشر وبحث ورسائل</h1>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    سوق<span style="font-weight:400;opacity:0.9">نت</span>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="showPage('home')" id="nav-home"><i class="ti ti-home" aria-hidden="true"></i> الرئيسية</button>
+    <button class="nav-btn" onclick="showPage('browse')" id="nav-browse"><i class="ti ti-layout-grid" aria-hidden="true"></i> تصفح</button>
+    <button class="nav-btn" onclick="showPage('messages')" id="nav-messages"><i class="ti ti-message-circle" aria-hidden="true"></i> رسائل <div class="badge">3</div></button>
+    <button class="nav-btn" onclick="showPage('profile')" id="nav-profile"><i class="ti ti-user" aria-hidden="true"></i> حسابي</button>
+  </div>
+  <button class="post-btn" onclick="showPage('post')"><i class="ti ti-plus" aria-hidden="true"></i> أضف إعلانك</button>
+</div>
+
+<div class="page active" id="page-home">
+  <div class="hero">
+    <h1>🛍️ اشتري وبيع بسهولة وأمان</h1>
+    <p>أكثر من 2 مليون إعلان في جميع المحافظات</p>
+    <div class="search-bar">
+      <button><i class="ti ti-search" aria-hidden="true"></i> بحث</button>
+      <input type="text" placeholder="ابحث عن سيارات، شقق، موبايلات..." />
+      <select>
+        <option>كل المناطق</option>
+        <option>القاهرة</option>
+        <option>الجيزة</option>
+        <option>الإسكندرية</option>
+        <option>المنصورة</option>
+        <option>أسيوط</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-item"><i class="ti ti-ad" aria-hidden="true" style="font-size:18px"></i> <strong>2,847,391</strong> إعلان نشط</div>
+    <div class="stat-item"><i class="ti ti-users" aria-hidden="true" style="font-size:18px"></i> <strong>841,200</strong> عضو مسجل</div>
+    <div class="stat-item"><i class="ti ti-chart-arrows-vertical" aria-hidden="true" style="font-size:18px"></i> <strong>1,240</strong> إعلان اليوم</div>
+    <div class="stat-item"><i class="ti ti-map-pin" aria-hidden="true" style="font-size:18px"></i> <strong>27</strong> محافظة</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">تصفح حسب الفئة</div>
+    <div class="categories-grid" id="cats-grid"></div>
+  </div>
+
+  <div class="section" style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border); max-width: 100%;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <div class="section-title">إعلانات مميزة</div>
+      <div class="ads-grid" id="featured-ads"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">أحدث الإعلانات</div>
+    <div class="ads-grid" id="latest-ads"></div>
+  </div>
+</div>
+
+<div class="page" id="page-browse">
+  <div class="browse-layout">
+    <div class="filters-panel">
+      <div class="filter-title"><i class="ti ti-adjustments-horizontal" aria-hidden="true" style="font-size:18px;vertical-align:-3px;margin-left:6px"></i> تصفية النتائج</div>
+      <div class="filter-group">
+        <label>الفئة</label>
+        <select>
+          <option>كل الفئات</option>
+          <option>سيارات ومركبات</option>
+          <option>عقارات</option>
+          <option>موبايلات وتابلت</option>
+          <option>أجهزة منزلية</option>
+          <option>ملابس وأزياء</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>المنطقة</label>
+        <select>
+          <option>كل المناطق</option>
+          <option>القاهرة</option>
+          <option>الجيزة</option>
+          <option>الإسكندرية</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>نطاق السعر</label>
+        <div class="price-range">
+          <input type="number" placeholder="من" />
+          <span>—</span>
+          <input type="number" placeholder="إلى" />
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>الحالة</label>
+        <label class="filter-check"><input type="checkbox" checked /> جديد</label>
+        <label class="filter-check"><input type="checkbox" checked /> مستعمل (ممتاز)</label>
+        <label class="filter-check"><input type="checkbox" /> مستعمل (جيد)</label>
+        <label class="filter-check"><input type="checkbox" /> يحتاج إصلاح</label>
+      </div>
+      <div class="filter-group">
+        <label>خيارات إضافية</label>
+        <label class="filter-check"><input type="checkbox" /> مميز فقط</label>
+        <label class="filter-check"><input type="checkbox" /> مع صور</label>
+        <label class="filter-check"><input type="checkbox" /> بائع موثق</label>
+      </div>
+      <button class="apply-filter"><i class="ti ti-filter" aria-hidden="true"></i> تطبيق الفلاتر</button>
+    </div>
+    <div>
+      <div class="results-bar">
+        <span class="results-count"><strong>1,284</strong> إعلان</span>
+        <select class="sort-select">
+          <option>الأحدث أولاً</option>
+          <option>الأرخص أولاً</option>
+          <option>الأغلى أولاً</option>
+          <option>الأكثر مشاهدة</option>
+        </select>
+      </div>
+      <div class="ads-grid" id="browse-ads"></div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-post">
+  <div class="post-container">
+    <div class="post-steps">
+      <div class="step active"><div class="step-num">1</div><br/>الفئة</div>
+      <div class="step"><div class="step-num">2</div><br/>التفاصيل</div>
+      <div class="step"><div class="step-num">3</div><br/>الصور</div>
+      <div class="step"><div class="step-num">4</div><br/>التواصل</div>
+    </div>
+    <div class="post-card">
+      <h3><i class="ti ti-list" aria-hidden="true" style="vertical-align:-2px;margin-left:8px;color:var(--primary); font-size:20px;"></i> معلومات الإعلان</h3>
+      <div class="form-group">
+        <label class="form-label">عنوان الإعلان <span>*</span></label>
+        <input class="form-input" type="text" placeholder="مثال: آيفون 15 برو ماكس 256 جيجا بحالة ممتازة" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">الفئة الرئيسية <span>*</span></label>
+          <select class="form-input">
+            <option value="">اختر الفئة</option>
+            <option>سيارات ومركبات</option>
+            <option>عقارات</option>
+            <option>موبايلات وتابلت</option>
+            <option>أجهزة منزلية</option>
+            <option>إلكترونيات</option>
+            <option>ملابس وأزياء</option>
+            <option>أثاث ومنزل</option>
+            <option>حيوانات أليفة</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">الفئة الفرعية</label>
+          <select class="form-input">
+            <option>اختر الفئة أولاً</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">الوصف التفصيلي <span>*</span></label>
+        <textarea class="form-input" placeholder="اكتب وصفاً تفصيلياً للمنتج أو الخدمة، اذكر الحالة والمميزات والعيوب إن وجدت..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">السعر (جنيه) <span>*</span></label>
+          <input class="form-input" type="number" placeholder="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">قابل للتفاوض</label>
+          <select class="form-input">
+            <option>نعم، قابل للتفاوض</option>
+            <option>لا، السعر ثابت</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">الحالة</label>
+          <select class="form-input">
+            <option>جديد</option>
+            <option>مستعمل - ممتاز</option>
+            <option>مستعمل - جيد</option>
+            <option>يحتاج إصلاح</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">المحافظة <span>*</span></label>
+          <select class="form-input">
+            <option>القاهرة</option>
+            <option>الجيزة</option>
+            <option>الإسكندرية</option>
+            <option>المنصورة</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="post-card">
+      <h3><i class="ti ti-photo" aria-hidden="true" style="vertical-align:-2px;margin-left:8px;color:var(--primary); font-size:20px;"></i> صور الإعلان</h3>
+      <div class="img-upload">
+        <div class="img-upload-icon"><i class="ti ti-cloud-upload" aria-hidden="true"></i></div>
+        <p>اسحب الصور هنا أو انقر للاختيار</p>
+        <small>يمكنك إضافة حتى 10 صور • JPG, PNG, WEBP • حجم أقصى 5MB للصورة</small>
+      </div>
+    </div>
+    <div class="post-card">
+      <h3><i class="ti ti-phone" aria-hidden="true" style="vertical-align:-2px;margin-left:8px;color:var(--primary); font-size:20px;"></i> بيانات التواصل</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">الاسم <span>*</span></label>
+          <input class="form-input" type="text" placeholder="اسمك الكامل" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">رقم الهاتف <span>*</span></label>
+          <div class="phone-group">
+            <span class="phone-prefix">+20</span>
+            <input type="tel" placeholder="01xxxxxxxxx" />
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">البريد الإلكتروني</label>
+        <input class="form-input" type="email" placeholder="example@email.com" />
+      </div>
+      <label class="filter-check" style="margin-bottom:1rem; font-size: 13px;"><input type="checkbox" checked /> أوافق على <a href="#" style="color:var(--primary); margin: 0 4px;">شروط الاستخدام</a> وسياسة الخصوصية</label>
+    </div>
+    <button class="submit-btn" onclick="showToast()"><i class="ti ti-check" aria-hidden="true"></i> نشر الإعلان الآن</button>
+  </div>
+</div>
+
+<div class="page" id="page-messages">
+  <div class="messages-layout">
+    <div class="chats-sidebar">
+      <div class="chats-header">
+        <h3>الرسائل</h3>
+        <input type="text" placeholder="ابحث في المحادثات..." />
+      </div>
+      <div id="chats-list"></div>
+    </div>
+    <div class="chat-window">
+      <div class="chat-topbar">
+        <div class="chat-avatar" id="active-avatar" style="width:44px;height:44px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:22px">🧑</div>
+        <div class="chat-topbar-info">
+          <h4 id="active-name">أحمد محمد</h4>
+          <p id="active-ad">بخصوص: آيفون 15 برو ماكس</p>
+        </div>
+        <div class="chat-actions">
+          <button class="icon-btn"><i class="ti ti-phone" aria-hidden="true"></i></button>
+          <button class="icon-btn"><i class="ti ti-video" aria-hidden="true"></i></button>
+          <button class="icon-btn"><i class="ti ti-dots-vertical" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div class="messages-area" id="messages-area">
+        <div style="text-align:center;padding:1rem;font-size:12px;color:var(--text2)">اليوم، 2:30 م</div>
+        <div class="msg sent">
+          <div class="msg-ad-preview">
+            <div class="msg-ad-img">📱</div>
+            <div class="msg-ad-info"><p>آيفون 15 برو ماكس 256GB</p><span>32,000 جنيه</span></div>
+          </div>
+          <div class="msg-bubble">السلام عليكم، هل المنتج لا يزال متاحاً؟</div>
+          <span class="msg-time">2:30 م ✓✓</span>
+        </div>
+        <div class="msg received">
+          <div class="msg-bubble">وعليكم السلام، نعم لا يزال متاحاً 😊 هل تريد معاينته؟</div>
+          <span class="msg-time">2:32 م</span>
+        </div>
+        <div class="msg sent">
+          <div class="msg-bubble">ممتاز! هل السعر قابل للتفاوض؟ وما موقعك؟</div>
+          <span class="msg-time">2:35 م ✓✓</span>
+        </div>
+        <div class="msg received">
+          <div class="msg-bubble">السعر ثابت نظراً للحالة الممتازة. أنا في مدينة نصر، القاهرة. يمكننا الاجتماع في مكان عام.</div>
+          <span class="msg-time">2:37 م</span>
+        </div>
+      </div>
+      <div class="msg-input-bar">
+        <button class="attach-btn"><i class="ti ti-paperclip" aria-hidden="true"></i></button>
+        <input type="text" placeholder="اكتب رسالتك..." id="msg-input" onkeydown="if(event.key==='Enter')sendMsg()" />
+        <button class="send-btn" onclick="sendMsg()"><i class="ti ti-send" aria-hidden="true"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-profile">
+  <div style="max-width:800px;margin:0 auto;padding:2rem 1.5rem">
+    <div class="post-card" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;margin-bottom:1.5rem; box-shadow: var(--shadow)">
+      <div style="display:flex;align-items:center;gap:20px;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)">
+        <div style="width:72px;height:72px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff; box-shadow: 0 4px 15px rgba(232,76,30,0.3)">👤</div>
+        <div style="flex:1">
+          <h3 style="font-size:18px;font-weight:700; margin-bottom: 4px; border:none; padding:0;">محمد أحمد <i class="ti ti-badge-filled" style="color:#1da1f2; font-size:18px;"></i></h3>
+          <p style="font-size:14px;color:var(--text2);margin-top:2px"><i class="ti ti-map-pin" aria-hidden="true" style="font-size:15px;vertical-align:-2px;margin-left:4px"></i>الجيزة، مصر</p>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+            <span style="color:var(--gold);font-size:16px">★★★★★</span>
+            <span style="font-size:13px;color:var(--text2); font-weight:600;">4.8 (132 تقييم)</span>
+          </div>
+        </div>
+        <button class="btn-msg" style="width:auto;padding:10px 20px"><i class="ti ti-edit" aria-hidden="true"></i> تعديل</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:15px;text-align:center">
+        <div style="background:var(--surface2);border-radius:12px;padding:16px; border: 1px solid var(--border)"><div style="font-size:24px;font-weight:700;color:var(--primary)">24</div><div style="font-size:13px;color:var(--text2);font-weight:600;margin-top:4px;">إعلان نشط</div></div>
+        <div style="background:var(--surface2);border-radius:12px;padding:16px; border: 1px solid var(--border)"><div style="font-size:24px;font-weight:700;color:var(--primary)">89</div><div style="font-size:13px;color:var(--text2);font-weight:600;margin-top:4px;">إعلان مباع</div></div>
+        <div style="background:var(--surface2);border-radius:12px;padding:16px; border: 1px solid var(--border)"><div style="font-size:24px;font-weight:700;color:var(--primary)">4.2K</div><div style="font-size:13px;color:var(--text2);font-weight:600;margin-top:4px;">مشاهدة</div></div>
+        <div style="background:var(--surface2);border-radius:12px;padding:16px; border: 1px solid var(--border)"><div style="font-size:24px;font-weight:700;color:var(--primary)">2020</div><div style="font-size:13px;color:var(--text2);font-weight:600;margin-top:4px;">عضو منذ</div></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:2rem">
+      <button class="btn-call" onclick="showPage('post')"><i class="ti ti-plus" aria-hidden="true"></i> إضافة إعلان جديد</button>
+      <button class="btn-msg"><i class="ti ti-heart" aria-hidden="true"></i> المفضلة (12)</button>
+    </div>
+    <div class="section-title" style="margin-bottom:1.5rem">إعلاناتي الأخيرة</div>
+    <div class="ads-grid" id="my-ads"></div>
+  </div>
+</div>
+
+<div class="page" id="page-ad-details">
+  <div class="ad-detail">
+    <div>
+      <div class="ad-gallery">
+        <div class="ad-main-img" id="detail-main-emoji">📱</div>
+        <div class="ad-thumbs">
+          <div class="ad-thumb active">📱</div>
+          <div class="ad-thumb">📦</div>
+          <div class="ad-thumb">🏷️</div>
+        </div>
+      </div>
+      
+      <div class="ad-info-card">
+        <h2 id="detail-title">عنوان الإعلان</h2>
+        <div class="ad-tags">
+          <span class="tag" id="detail-time"><i class="ti ti-clock"></i> منذ ساعتين</span>
+          <span class="tag" id="detail-loc"><i class="ti ti-map-pin"></i> القاهرة</span>
+          <span class="tag"><i class="ti ti-cash"></i> قابل للتفاوض</span>
+        </div>
+        <div class="ad-desc">
+          هذا النص هو وصف تجريبي للإعلان. المنتج بحالة ممتازة ولا يوجد به أي عيوب. تم استخدامه لفترة قصيرة جداً ومعه كافة الملحقات الأصلية والكرتونة. نرجو التواصل للجادين فقط.
+        </div>
+        <br>
+        <h3 style="font-size: 16px; font-weight:700; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">المواصفات</h3>
+        <div class="specs-grid">
+          <div class="spec-row"><span class="spec-label">الحالة</span><span class="spec-val">مستعمل - ممتاز</span></div>
+          <div class="spec-row"><span class="spec-label">الماركة</span><span class="spec-val">أصلية 100%</span></div>
+          <div class="spec-row"><span class="spec-label">طريقة الدفع</span><span class="spec-val">كاش فقط</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="seller-card">
+        <div class="ad-price-big"><span id="detail-price">0</span> <span style="font-size: 18px; color: var(--text2)">جنيه</span></div>
+        
+        <div class="seller-header">
+          <div class="seller-avatar">🧑</div>
+          <div>
+            <div class="seller-name">أحمد محمد <i class="ti ti-circle-check-filled" style="color:var(--primary); font-size:14px"></i></div>
+            <div class="seller-meta">عضو نشط منذ 2021</div>
+          </div>
+        </div>
+        
+        <div class="contact-btns">
+          <button class="btn-call" onclick="showToast('جاري الاتصال... 📞')"><i class="ti ti-phone"></i> إظهار الرقم واتصال</button>
+          <button class="btn-msg" onclick="showPage('messages')"><i class="ti ti-message-circle"></i> أرسل رسالة للبائع</button>
+        </div>
+        
+        <div class="safety-tip">
+          <strong>💡 نصيحة أمان:</strong> لا تقم بتحويل أي مبالغ مالية قبل معاينة المنتج وجهاً لوجه في مكان عام لتجنب عمليات الاحتيال.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-circle-check" aria-hidden="true"></i> تم الإجراء بنجاح!</div>
+
+<script>
+const categories = [
+  {icon:'🚗',name:'سيارات',count:'184,200'},
+  {icon:'🏠',name:'عقارات',count:'92,400'},
+  {icon:'📱',name:'موبايلات',count:'267,800'},
+  {icon:'💻',name:'إلكترونيات',count:'143,600'},
+  {icon:'👗',name:'ملابس',count:'321,000'},
+  {icon:'🛋️',name:'أثاث',count:'87,300'},
+  {icon:'🐾',name:'حيوانات',count:'34,700'},
+  {icon:'🔧',name:'خدمات',count:'211,500'},
+  {icon:'🎮',name:'ألعاب',count:'56,200'},
+  {icon:'📚',name:'كتب',count:'43,800'},
+];
+
+const ads = [
+  {emoji:'📱',title:'آيفون 15 برو ماكس 256GB أسود تيتانيوم',price:'32,000',unit:'جنيه',loc:'القاهرة',time:'منذ ساعتين',featured:true,fav:false},
+  {emoji:'🚗',title:'تويوتا كورولا 2021 أبيض أوتوماتيك كاملة المشواريات',price:'420,000',unit:'جنيه',loc:'الجيزة',time:'منذ 3 ساعات',featured:false,fav:false},
+  {emoji:'🏠',title:'شقة للإيجار 3 غرف وصالة في مدينة نصر مفروشة',price:'8,500',unit:'جنيه/شهر',loc:'القاهرة',time:'منذ 5 ساعات',featured:true,fav:false},
+  {emoji:'💻',title:'لابتوب ديل إكس بي إس 15 كور i7 الجيل 13',price:'45,000',unit:'جنيه',loc:'الإسكندرية',time:'منذ يوم',featured:false,fav:true},
+  {emoji:'📸',title:'كاميرا سوني Alpha A7III مع عدسة 24-70',price:'28,000',unit:'جنيه',loc:'القاهرة',time:'منذ يومين',featured:false,fav:false},
+  {emoji:'🛋️',title:'غرفة نوم مودرن خشب زان طبيعي 7 قطع',price:'18,500',unit:'جنيه',loc:'الجيزة',time:'منذ 3 أيام',featured:false,fav:false},
+  {emoji:'🎮',title:'بلايستيشن 5 الإصدار الجديد مع دراعتين',price:'25,000',unit:'جنيه',loc:'المنصورة',time:'منذ 4 أيام',featured:false,fav:false},
+  {emoji:'🐕',title:'كلب جولدن ريتريفر عمر 3 أشهر مع شهادة',price:'12,000',unit:'جنيه',loc:'القاهرة',time:'منذ 5 أيام',featured:false,fav:false},
+];
+
+const chats = [
+  {avatar:'🧑',name:'أحمد محمد',preview:'نعم لا يزال متاحاً 😊',time:'2:37 م',unread:0,ad:'بخصوص: آيفون 15 برو ماكس'},
+  {avatar:'👩',name:'سارة علي',preview:'هل يمكن تخفيض السعر قليلاً؟',time:'أمس',unread:2,ad:'بخصوص: غرفة نوم مودرن'},
+  {avatar:'🧔',name:'محمود حسن',preview:'موعد المعاينة متى يناسبك؟',time:'أمس',unread:1,ad:'بخصوص: تويوتا كورولا'},
+  {avatar:'👨',name:'خالد إبراهيم',preview:'شكراً على التعامل الراقي 🙏',time:'الأحد',unread:0,ad:'بخصوص: لابتوب ديل'},
+];
+
+function renderAds(containerId, adsData) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  // أضفنا انيميشن متدرج slideUpFade لكل كارت
+  container.innerHTML = adsData.map((ad, i) => `
+    <div class="ad-card" style="animation: slideUpFade 0.6s ease forwards ${i * 0.1}s; opacity: 0;" onclick="viewAd(${i})">
+      ${ad.featured ? '<div class="featured-badge">مميز <i class="ti ti-star-filled" style="font-size:10px"></i></div>' : ''}
+      <button class="fav-btn ${ad.fav ? 'active' : ''}" onclick="toggleFav(event,${i})" aria-label="إضافة للمفضلة">${ad.fav ? '❤️' : '🤍'}</button>
+      <div class="ad-img">${ad.emoji}</div>
+      <div class="ad-body">
+        <div class="ad-title">${ad.title}</div>
+        <div class="ad-price">${ad.price} <span>${ad.unit}</span></div>
+        <div class="ad-meta">
+          <span><i class="ti ti-map-pin" aria-hidden="true"></i>${ad.loc}</span>
+          <span><i class="ti ti-clock" aria-hidden="true"></i>${ad.time}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderChats() {
+  const list = document.getElementById('chats-list');
+  list.innerHTML = chats.map((c, i) => `
+    <div class="chat-item ${i===0?'active':''}" onclick="selectChat(${i})">
+      <div class="chat-avatar">${c.avatar}</div>
+      <div class="chat-info">
+        <div class="chat-name">${c.name}</div>
+        <div class="chat-preview">${c.preview}</div>
+      </div>
+      <div class="chat-meta">
+        <div class="chat-time">${c.time}</div>
+        ${c.unread ? `<div class="chat-unread">${c.unread}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectChat(i) {
+  document.querySelectorAll('.chat-item').forEach((el,j) => el.classList.toggle('active', j===i));
+  document.getElementById('active-name').textContent = chats[i].name;
+  document.getElementById('active-ad').textContent = chats[i].ad;
+  document.getElementById('active-avatar').textContent = chats[i].avatar;
+}
+
+function toggleFav(e, i) {
+  e.stopPropagation();
+  ads[i].fav = !ads[i].fav;
+  e.currentTarget.textContent = ads[i].fav ? '❤️' : '🤍';
+  e.currentTarget.classList.toggle('active', ads[i].fav);
+  if(ads[i].fav) showToast('تمت الإضافة إلى المفضلة 💖');
+}
+
+function viewAd(i) {
+  const ad = ads[i];
+  // تحديث البيانات في صفحة التفاصيل
+  document.getElementById('detail-title').textContent = ad.title;
+  document.getElementById('detail-price').textContent = ad.price;
+  document.getElementById('detail-main-emoji').textContent = ad.emoji;
+  document.getElementById('detail-loc').innerHTML = `<i class="ti ti-map-pin"></i> ${ad.loc}`;
+  document.getElementById('detail-time').innerHTML = `<i class="ti ti-clock"></i> ${ad.time}`;
+  
+  // الانتقال لصفحة التفاصيل
+  showPage('ad-details');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function sendMsg() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const area = document.getElementById('messages-area');
+  const div = document.createElement('div');
+  div.className = 'msg sent';
+  div.innerHTML = `<div class="msg-bubble">${text}</div><span class="msg-time">الآن ✓</span>`;
+  area.appendChild(div);
+  input.value = '';
+  area.scrollTop = area.scrollHeight;
+  setTimeout(() => {
+    const reply = document.createElement('div');
+    reply.className = 'msg received';
+    reply.innerHTML = `<div class="msg-bubble">شكراً لرسالتك، سأرد عليك قريباً إن شاء الله 🙏</div><span class="msg-time" style="align-self:flex-end;color:rgba(255,255,255,0.7)">الآن</span>`;
+    area.appendChild(reply);
+    area.scrollTop = area.scrollHeight;
+  }, 1200);
+}
+
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  const btn = document.getElementById('nav-' + page);
+  if (btn) btn.classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (msg) t.innerHTML = `<i class="ti ti-bell-ringing" aria-hidden="true" style="color:var(--primary)"></i> ${msg}`;
+  else t.innerHTML = `<i class="ti ti-circle-check" aria-hidden="true"></i> تم نشر إعلانك بنجاح! سيظهر خلال دقائق.`;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// Init
+const catsGrid = document.getElementById('cats-grid');
+catsGrid.innerHTML = categories.map((c, i) => `
+  <div class="cat-card" style="animation: slideUpFade 0.5s ease forwards ${i * 0.05}s; opacity: 0;" onclick="showPage('browse')">
+    <div class="cat-icon">${c.icon}</div>
+    <div class="cat-name">${c.name}</div>
+    <div class="cat-count">${c.count}</div>
+  </div>
+`).join('');
+
+renderAds('featured-ads', ads.filter(a => a.featured));
+renderAds('latest-ads', ads);
+renderAds('browse-ads', ads);
+renderAds('my-ads', ads.slice(0,4));
+renderChats();
+
+// تفاعل صغير لصور المعرض في صفحة الإعلان
+document.querySelectorAll('.ad-thumb').forEach(thumb => {
+  thumb.addEventListener('click', function() {
+    document.querySelectorAll('.ad-thumb').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('detail-main-emoji').textContent = this.textContent;
+    
+    // أنيميشن صغير عند تغيير الصورة
+    const mainImg = document.getElementById('detail-main-emoji');
+    mainImg.style.transform = 'scale(0.8)';
+    mainImg.style.opacity = '0.5';
+    setTimeout(() => {
+      mainImg.style.transform = 'scale(1)';
+      mainImg.style.opacity = '1';
+    }, 150);
+  });
+});
+</script>
+</body>
+</html>
