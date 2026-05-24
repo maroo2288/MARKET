@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>StockPro — نظام إدارة المخازن</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+<style>
+:root {
+  --bg:       #0a0c10;
+  --surface:  #111318;
+  --surface2: #181b22;
+  --surface3: #1e222c;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.12);
+  --gold:     #f0b429;
+  --gold2:    #e09a10;
+  --green:    #22c55e;
+  --red:      #ef4444;
+  --blue:     #3b82f6;
+  --purple:   #a855f7;
+  --cyan:     #06b6d4;
+  --text:     #e8eaf0;
+  --muted:    #6b7280;
+  --muted2:   #9ca3af;
+  --radius:   10px;
+  --radius2:  14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans Arabic',sans-serif;font-size:14px;display:flex}
+
+/* ── SIDEBAR ── */
+.sidebar{width:220px;min-width:220px;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;padding:0;overflow-y:auto;transition:width .25s}
+.sidebar.collapsed{width:60px;min-width:60px}
+.sidebar-logo{padding:18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.logo-icon{width:34px;height:34px;background:var(--gold);border-radius:8px;display:grid;place-items:center;flex-shrink:0;font-size:16px;color:#000;font-weight:700}
+.logo-text{font-weight:700;font-size:15px;color:var(--text);white-space:nowrap;overflow:hidden}
+.logo-text span{color:var(--gold)}
+.sidebar-section{padding:8px 0}
+.sidebar-label{padding:6px 16px 4px;font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;transition:background .15s,color .15s;border-radius:0;color:var(--muted2);white-space:nowrap;overflow:hidden;position:relative}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(--text)}
+.nav-item.active{background:rgba(240,180,41,0.1);color:var(--gold)}
+.nav-item.active::before{content:'';position:absolute;right:0;top:0;bottom:0;width:3px;background:var(--gold);border-radius:2px 0 0 2px}
+.nav-item i{width:20px;text-align:center;font-size:15px;flex-shrink:0}
+.nav-item span{font-size:13px;font-weight:500}
+.nav-badge{margin-right:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 20px;flex-shrink:0}
+.topbar-toggle{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:16px;padding:6px;border-radius:6px;transition:background .15s}
+.topbar-toggle:hover{background:var(--surface3)}
+.topbar-search{flex:1;max-width:340px;position:relative}
+.topbar-search input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px 7px 34px;color:var(--text);font-family:inherit;font-size:13px;outline:none;transition:border .2s}
+.topbar-search input:focus{border-color:rgba(240,180,41,0.4)}
+.topbar-search i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px}
+.topbar-right{margin-right:auto;display:flex;align-items:center;gap:8px}
+.tb-btn{background:none;border:1px solid var(--border);color:var(--muted2);cursor:pointer;padding:6px 12px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:500;display:flex;align-items:center;gap:6px;transition:all .15s}
+.tb-btn:hover{border-color:var(--border2);color:var(--text);background:var(--surface2)}
+.tb-btn.primary{background:var(--gold);color:#000;border-color:var(--gold);font-weight:600}
+.tb-btn.primary:hover{background:var(--gold2);border-color:var(--gold2)}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a855f7);display:grid;place-items:center;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0}
+.notif-btn{position:relative;background:none;border:none;color:var(--muted2);cursor:pointer;font-size:15px;padding:6px;border-radius:6px;transition:background .15s}
+.notif-btn:hover{background:var(--surface3);color:var(--text)}
+.notif-dot{position:absolute;top:4px;right:4px;width:7px;height:7px;background:var(--red);border-radius:50%;border:2px solid var(--surface)}
+
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* ── PAGE HEADER ── */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.page-title{font-size:20px;font-weight:600;color:var(--text)}
+.page-sub{font-size:13px;color:var(--muted);margin-top:2px}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.breadcrumb span{color:var(--muted2)}
+.breadcrumb i{font-size:10px}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:16px 18px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .15s}
+.kpi-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.kpi-card::before{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:50%;opacity:.07;transform:translate(10px,-10px)}
+.kpi-card.c-gold::before{background:var(--gold)}
+.kpi-card.c-green::before{background:var(--green)}
+.kpi-card.c-red::before{background:var(--red)}
+.kpi-card.c-blue::before{background:var(--blue)}
+.kpi-icon{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-size:15px;margin-bottom:12px}
+.kpi-card.c-gold .kpi-icon{background:rgba(240,180,41,0.12);color:var(--gold)}
+.kpi-card.c-green .kpi-icon{background:rgba(34,197,94,0.12);color:var(--green)}
+.kpi-card.c-red .kpi-icon{background:rgba(239,68,68,0.12);color:var(--red)}
+.kpi-card.c-blue .kpi-icon{background:rgba(59,130,246,0.12);color:var(--blue)}
+.kpi-label{font-size:12px;color:var(--muted);margin-bottom:4px}
+.kpi-value{font-size:22px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--text)}
+.kpi-change{display:flex;align-items:center;gap:4px;font-size:11px;margin-top:6px}
+.kpi-change.up{color:var(--green)}.kpi-change.down{color:var(--red)}
+
+/* ── GRID 2-COL ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.grid-3{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
+
+/* ── CARD ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);overflow:hidden}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.card-title i{color:var(--gold);font-size:14px}
+.card-actions{display:flex;gap:6px}
+.card-btn{background:none;border:1px solid var(--border);color:var(--muted2);cursor:pointer;padding:4px 10px;border-radius:6px;font-size:11px;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:4px}
+.card-btn:hover{border-color:var(--border2);color:var(--text)}
+.card-body{padding:16px 18px}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:9px 12px;text-align:right;color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.td-mono{font-family:'IBM Plex Mono',monospace;font-size:12px}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-green{background:rgba(34,197,94,0.12);color:#4ade80}
+.badge-red{background:rgba(239,68,68,0.12);color:#f87171}
+.badge-yellow{background:rgba(240,180,41,0.12);color:var(--gold)}
+.badge-blue{background:rgba(59,130,246,0.12);color:#60a5fa}
+.badge-purple{background:rgba(168,85,247,0.12);color:#c084fc}
+.badge-gray{background:rgba(107,114,128,0.15);color:var(--muted2)}
+
+/* ── STOCK BAR ── */
+.stock-bar{width:90px;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.stock-fill{height:100%;border-radius:3px;transition:width .5s}
+.fill-green{background:var(--green)}.fill-yellow{background:var(--gold)}.fill-red{background:var(--red)}
+
+/* ── CHART BARS ── */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:120px;padding:8px 0}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar-fill{width:100%;border-radius:4px 4px 0 0;transition:height .5s;min-height:4px;cursor:pointer;position:relative}
+.bar-fill:hover::after{content:attr(data-val);position:absolute;top:-22px;left:50%;transform:translateX(-50%);background:var(--surface3);color:var(--text);padding:2px 6px;border-radius:4px;font-size:10px;white-space:nowrap;font-family:'IBM Plex Mono',monospace}
+.bar-label{font-size:10px;color:var(--muted);text-align:center}
+
+/* ── DONUT ── */
+.donut-wrap{display:flex;align-items:center;gap:16px}
+.donut-svg{flex-shrink:0}
+.donut-legend{display:flex;flex-direction:column;gap:8px;flex:1}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.legend-name{color:var(--muted2);flex:1}
+.legend-val{color:var(--text);font-weight:500;font-family:'IBM Plex Mono',monospace;font-size:12px}
+
+/* ── ACTIVITY ── */
+.activity-list{display:flex;flex-direction:column;gap:0}
+.act-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.act-item:last-child{border-bottom:none}
+.act-icon{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:12px;flex-shrink:0;margin-top:1px}
+.act-body{flex:1;min-width:0}
+.act-title{font-size:12px;color:var(--text);font-weight:500}
+.act-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.act-time{font-size:11px;color:var(--muted);flex-shrink:0;margin-top:2px}
+
+/* ── ALERT ROW ── */
+.alert-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.18);border-radius:8px;margin-bottom:8px;font-size:12px}
+.alert-row i{color:var(--red);font-size:14px;flex-shrink:0}
+.alert-row .al-name{flex:1;color:var(--text);font-weight:500}
+.alert-row .al-qty{color:var(--red);font-family:'IBM Plex Mono',monospace;font-weight:600}
+.alert-row .al-btn{background:none;border:1px solid rgba(239,68,68,0.3);color:var(--red);font-size:11px;padding:3px 8px;border-radius:5px;cursor:pointer;font-family:inherit;transition:background .15s}
+.alert-row .al-btn:hover{background:rgba(239,68,68,0.12)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;transform:scale(.95) translateY(10px);transition:transform .2s;box-shadow:0 30px 80px rgba(0,0,0,0.7)}
+.modal-overlay.open .modal{transform:scale(1) translateY(0)}
+.modal-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:600}
+.modal-close{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:16px;padding:4px;border-radius:6px;transition:color .15s,background .15s}
+.modal-close:hover{color:var(--text);background:var(--surface2)}
+.modal-body{padding:20px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-field{display:flex;flex-direction:column;gap:6px}
+.form-field.full{grid-column:1/-1}
+.form-label{font-size:12px;color:var(--muted2);font-weight:500}
+.form-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:inherit;font-size:13px;outline:none;transition:border .2s;width:100%}
+.form-input:focus{border-color:rgba(240,180,41,0.45)}
+.form-select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:inherit;font-size:13px;outline:none;cursor:pointer;width:100%}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;background:var(--surface2);padding:3px;border-radius:9px;margin-bottom:18px}
+.tab{padding:6px 14px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;color:var(--muted2);transition:all .15s;white-space:nowrap}
+.tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.3)}
+
+/* ── PAGES ── */
+.page{display:none}.page.active{display:block}
+
+/* ── SEARCH HIGHLIGHT ── */
+.hl{background:rgba(240,180,41,0.25);border-radius:2px;padding:0 2px}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px}
+
+/* ── PROGRESS RING ── */
+.prog-ring{transform:rotate(-90deg)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .sidebar{width:60px;min-width:60px}
+  .sidebar .logo-text,.sidebar .nav-item span,.sidebar .sidebar-label{display:none}
+}
+
+/* ── USERS PAGE ── */
+.user-row td:first-child{display:flex;align-items:center;gap:10px}
+.uavatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:600;flex-shrink:0}
+
+/* ── EMPTY STATE ── */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:10px;color:var(--muted)}
+.empty i{font-size:32px;opacity:.4}
+.empty p{font-size:13px}
+
+/* ── TOAST ── */
+.toast-wrap{position:fixed;bottom:24px;left:24px;z-index:2000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px 16px;font-size:12px;display:flex;align-items:center;gap:10px;min-width:220px;transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.t-success{border-color:rgba(34,197,94,0.3)}.toast.t-success i{color:var(--green)}
+.toast.t-error{border-color:rgba(239,68,68,0.3)}.toast.t-error i{color:var(--red)}
+.toast.t-info{border-color:rgba(59,130,246,0.3)}.toast.t-info i{color:var(--blue)}
+
+/* ── REPORT CARDS ── */
+.report-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.report-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:16px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:10px}
+.report-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.rc-icon{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:17px}
+.rc-title{font-size:13px;font-weight:600;color:var(--text)}
+.rc-desc{font-size:11px;color:var(--muted);line-height:1.5}
+.rc-arrow{color:var(--muted);font-size:12px;margin-top:auto;display:flex;align-items:center;gap:4px}
+
+/* ── SETTINGS ── */
+.settings-section{margin-bottom:24px}
+.settings-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.settings-row:last-child{border-bottom:none}
+.sr-label{font-size:13px;color:var(--text)}
+.sr-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.toggle{width:38px;height:22px;background:var(--surface3);border-radius:11px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:none}
+.toggle.on{background:var(--green)}
+.toggle::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:3px;right:3px;transition:transform .2s}
+.toggle.on::after{transform:translateX(-16px)}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">S</div>
+    <div class="logo-text"><span>Stock</span>Pro</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">الرئيسية</div>
+    <div class="nav-item active" data-page="dashboard">
+      <i class="fa-solid fa-gauge-high"></i><span>لوحة التحكم</span>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">المخزون</div>
+    <div class="nav-item" data-page="inventory">
+      <i class="fa-solid fa-boxes-stacked"></i><span>الأصناف</span>
+    </div>
+    <div class="nav-item" data-page="movements">
+      <i class="fa-solid fa-right-left"></i><span>حركة المخزون</span>
+    </div>
+    <div class="nav-item" data-page="suppliers">
+      <i class="fa-solid fa-truck"></i><span>الموردون</span>
+    </div>
+    <div class="nav-item" data-page="alerts">
+      <i class="fa-solid fa-triangle-exclamation"></i><span>التنبيهات</span>
+      <span class="nav-badge" id="alertBadge">3</span>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">التقارير</div>
+    <div class="nav-item" data-page="reports">
+      <i class="fa-solid fa-chart-column"></i><span>التقارير</span>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">الإدارة</div>
+    <div class="nav-item" data-page="users">
+      <i class="fa-solid fa-users"></i><span>المستخدمون</span>
+    </div>
+    <div class="nav-item" data-page="settings">
+      <i class="fa-solid fa-gear"></i><span>الإعدادات</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <button class="topbar-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+    <div class="topbar-search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" placeholder="ابحث عن صنف، مورد، أو رقم مرجعي..." id="globalSearch" oninput="handleSearch(this.value)"/>
+    </div>
+    <div class="topbar-right">
+      <button class="tb-btn" onclick="showModal('exportModal')"><i class="fa-solid fa-file-export"></i> تصدير</button>
+      <button class="tb-btn primary" onclick="showModal('addItemModal')"><i class="fa-solid fa-plus"></i> إضافة صنف</button>
+      <button class="notif-btn" onclick="navTo('alerts')"><i class="fa-solid fa-bell"></i><span class="notif-dot"></span></button>
+      <div class="user-avatar" title="المدير العام">م</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">لوحة التحكم</div>
+          <div class="page-sub">آخر تحديث: منذ دقيقتين</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <select class="form-select" style="width:auto;font-size:12px" onchange="updateCharts(this.value)">
+            <option value="week">هذا الأسبوع</option>
+            <option value="month" selected>هذا الشهر</option>
+            <option value="quarter">هذا الربع</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-grid">
+        <div class="kpi-card c-gold">
+          <div class="kpi-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+          <div class="kpi-label">إجمالي الأصناف</div>
+          <div class="kpi-value" id="k-total">247</div>
+          <div class="kpi-change up"><i class="fa-solid fa-arrow-trend-up"></i> +12 هذا الشهر</div>
+        </div>
+        <div class="kpi-card c-green">
+          <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="kpi-label">قيمة المخزون</div>
+          <div class="kpi-value" id="k-value">184,320</div>
+          <div class="kpi-change up"><i class="fa-solid fa-arrow-trend-up"></i> +8.3%</div>
+        </div>
+        <div class="kpi-card c-red">
+          <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="kpi-label">نواقص المخزون</div>
+          <div class="kpi-value" id="k-low">3</div>
+          <div class="kpi-change down"><i class="fa-solid fa-arrow-trend-down"></i> يحتاج إعادة طلب</div>
+        </div>
+        <div class="kpi-card c-blue">
+          <div class="kpi-icon"><i class="fa-solid fa-right-left"></i></div>
+          <div class="kpi-label">حركات اليوم</div>
+          <div class="kpi-value" id="k-moves">28</div>
+          <div class="kpi-change up"><i class="fa-solid fa-arrow-trend-up"></i> +5 مقارنة بالأمس</div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <!-- Bar Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-chart-column"></i> حركة الوارد والصادر</div>
+            <div class="card-actions">
+              <button class="card-btn">تفصيل <i class="fa-solid fa-angle-down"></i></button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;gap:12px;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted2)"><span style="width:10px;height:10px;background:#22c55e;border-radius:2px;display:inline-block"></span>وارد</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted2)"><span style="width:10px;height:10px;background:#f0b429;border-radius:2px;display:inline-block"></span>صادر</div>
+            </div>
+            <div id="barChart" class="bar-chart"></div>
+          </div>
+        </div>
+
+        <!-- Donut -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-chart-pie"></i> توزيع الفئات</div>
+          </div>
+          <div class="card-body">
+            <div class="donut-wrap">
+              <svg class="donut-svg" width="90" height="90" viewBox="0 0 90 90">
+                <circle cx="45" cy="45" r="35" fill="none" stroke="var(--surface3)" stroke-width="12"/>
+                <circle id="d1" cx="45" cy="45" r="35" fill="none" stroke="#f0b429" stroke-width="12" stroke-dasharray="88 132" stroke-dashoffset="0" class="prog-ring"/>
+                <circle id="d2" cx="45" cy="45" r="35" fill="none" stroke="#3b82f6" stroke-width="12" stroke-dasharray="57 163" stroke-dashoffset="-88" class="prog-ring"/>
+                <circle id="d3" cx="45" cy="45" r="35" fill="none" stroke="#22c55e" stroke-width="12" stroke-dasharray="44 176" stroke-dashoffset="-145" class="prog-ring"/>
+                <circle id="d4" cx="45" cy="45" r="35" fill="none" stroke="#a855f7" stroke-width="12" stroke-dasharray="31 189" stroke-dashoffset="-189" class="prog-ring"/>
+                <text x="45" y="49" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text)" font-family="'IBM Plex Mono',monospace">247</text>
+              </svg>
+              <div class="donut-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#f0b429"></div><div class="legend-name">إلكترونيات</div><div class="legend-val">40%</div></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div><div class="legend-name">مستلزمات</div><div class="legend-val">26%</div></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div><div class="legend-name">أدوات</div><div class="legend-val">20%</div></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div><div class="legend-name">أخرى</div><div class="legend-val">14%</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Recent Activity -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> آخر الحركات</div>
+            <button class="card-btn" onclick="navTo('movements')">عرض الكل</button>
+          </div>
+          <div class="card-body" style="padding-top:4px">
+            <div class="activity-list" id="activityList"></div>
+          </div>
+        </div>
+
+        <!-- Low Stock Alerts -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i> تنبيهات المخزون</div>
+            <button class="card-btn" onclick="navTo('alerts')">إدارة</button>
+          </div>
+          <div class="card-body" style="padding-top:8px">
+            <div id="dashAlerts"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ INVENTORY ══ -->
+    <div class="page" id="page-inventory">
+      <div class="page-header">
+        <div>
+          <div class="page-title">إدارة الأصناف</div>
+          <div class="page-sub" id="invCount">247 صنف مسجل</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" class="form-input" style="width:200px" placeholder="بحث في الأصناف..." id="invSearch" oninput="filterInventory(this.value)"/>
+          <select class="form-select" style="width:140px" id="catFilter" onchange="filterInventory()">
+            <option value="">كل الفئات</option>
+            <option>إلكترونيات</option>
+            <option>مستلزمات</option>
+            <option>أدوات</option>
+            <option>أخرى</option>
+          </select>
+          <button class="tb-btn primary" onclick="showModal('addItemModal')"><i class="fa-solid fa-plus"></i> إضافة</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab active" onclick="setTab(this,'all')">الكل</div>
+        <div class="tab" onclick="setTab(this,'active')">متوفر</div>
+        <div class="tab" onclick="setTab(this,'low')">نقص</div>
+        <div class="tab" onclick="setTab(this,'out')">نفد</div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>الصنف</th>
+                <th>الرمز</th>
+                <th>الفئة</th>
+                <th>الكمية</th>
+                <th>المستودع</th>
+                <th>سعر الوحدة</th>
+                <th>الحالة</th>
+                <th>المخزون</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MOVEMENTS ══ -->
+    <div class="page" id="page-movements">
+      <div class="page-header">
+        <div>
+          <div class="page-title">حركة المخزون</div>
+          <div class="page-sub">تسجيل وتتبع الوارد والصادر والتحويلات</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="tb-btn" onclick="showModal('moveModal')"><i class="fa-solid fa-right-left"></i> تسجيل حركة</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header" style="gap:10px">
+          <div class="card-title"><i class="fa-solid fa-list"></i> سجل الحركات</div>
+          <div style="display:flex;gap:8px;margin-right:auto">
+            <select class="form-select" style="width:130px;font-size:12px" id="movTypeFilter" onchange="filterMovements()">
+              <option value="">كل الأنواع</option>
+              <option value="in">وارد</option>
+              <option value="out">صادر</option>
+              <option value="transfer">تحويل</option>
+            </select>
+            <input type="date" class="form-input" style="width:140px;font-size:12px" id="movDateFilter" onchange="filterMovements()"/>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>رقم الحركة</th>
+                <th>الصنف</th>
+                <th>النوع</th>
+                <th>الكمية</th>
+                <th>من / إلى</th>
+                <th>المستخدم</th>
+                <th>التاريخ</th>
+                <th>ملاحظات</th>
+              </tr>
+            </thead>
+            <tbody id="movementsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SUPPLIERS ══ -->
+    <div class="page" id="page-suppliers">
+      <div class="page-header">
+        <div class="page-title">الموردون</div>
+        <button class="tb-btn primary" onclick="showModal('addSupplierModal')"><i class="fa-solid fa-plus"></i> مورد جديد</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>اسم المورد</th><th>التخصص</th><th>التواصل</th><th>عدد الأصناف</th><th>آخر توريد</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody id="suppliersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ALERTS ══ -->
+    <div class="page" id="page-alerts">
+      <div class="page-header">
+        <div>
+          <div class="page-title">تنبيهات المخزون</div>
+          <div class="page-sub">الأصناف التي وصلت حد الإنذار أو نفدت</div>
+        </div>
+        <button class="tb-btn primary" onclick="reorderAll()"><i class="fa-solid fa-cart-shopping"></i> إعادة طلب الكل</button>
+      </div>
+      <div id="alertsPage"></div>
+    </div>
+
+    <!-- ══ REPORTS ══ -->
+    <div class="page" id="page-reports">
+      <div class="page-header">
+        <div class="page-title">التقارير والإحصائيات</div>
+      </div>
+      <div class="report-grid">
+        <div class="report-card" onclick="showToast('جاري تجهيز التقرير...','info')">
+          <div class="rc-icon" style="background:rgba(240,180,41,.12);color:var(--gold)"><i class="fa-solid fa-warehouse"></i></div>
+          <div class="rc-title">تقرير المخزون الحالي</div>
+          <div class="rc-desc">قائمة شاملة بكل الأصناف وكمياتها وقيمها الحالية</div>
+          <div class="rc-arrow"><i class="fa-solid fa-download"></i> تحميل PDF</div>
+        </div>
+        <div class="report-card" onclick="showToast('جاري تجهيز التقرير...','info')">
+          <div class="rc-icon" style="background:rgba(34,197,94,.12);color:var(--green)"><i class="fa-solid fa-right-left"></i></div>
+          <div class="rc-title">تقرير حركة المخزون</div>
+          <div class="rc-desc">تفاصيل جميع الواردات والصادرات خلال فترة محددة</div>
+          <div class="rc-arrow"><i class="fa-solid fa-download"></i> تحميل Excel</div>
+        </div>
+        <div class="report-card" onclick="showToast('جاري تجهيز التقرير...','info')">
+          <div class="rc-icon" style="background:rgba(239,68,68,.12);color:var(--red)"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="rc-title">تقرير نواقص المخزون</div>
+          <div class="rc-desc">الأصناف التي تحتاج إعادة طلب أو وصلت حد الإنذار</div>
+          <div class="rc-arrow"><i class="fa-solid fa-download"></i> تحميل PDF</div>
+        </div>
+        <div class="report-card" onclick="showToast('جاري تجهيز التقرير...','info')">
+          <div class="rc-icon" style="background:rgba(59,130,246,.12);color:var(--blue)"><i class="fa-solid fa-truck"></i></div>
+          <div class="rc-title">تقرير الموردين</div>
+          <div class="rc-desc">ملخص تعاملات الموردين والمشتريات لكل مورد</div>
+          <div class="rc-arrow"><i class="fa-solid fa-download"></i> تحميل Excel</div>
+        </div>
+        <div class="report-card" onclick="showToast('جاري تجهيز التقرير...','info')">
+          <div class="rc-icon" style="background:rgba(168,85,247,.12);color:var(--purple)"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="rc-title">تقرير تحليل التكلفة</div>
+          <div class="rc-desc">تحليل تكاليف التخزين وقيمة المخزون الإجمالية</div>
+          <div class="rc-arrow"><i class="fa-solid fa-download"></i> تحميل PDF</div>
+        </div>
+        <div class="report-card" onclick="showToast('جاري تجهيز التقرير...','info')">
+          <div class="rc-icon" style="background:rgba(6,182,212,.12);color:var(--cyan)"><i class="fa-solid fa-rotate"></i></div>
+          <div class="rc-title">تقرير معدل الدوران</div>
+          <div class="rc-desc">سرعة دوران كل صنف وتحديد الأصناف الراكدة</div>
+          <div class="rc-arrow"><i class="fa-solid fa-download"></i> تحميل Excel</div>
+        </div>
+      </div>
+      <!-- Mini stats -->
+      <div class="card">
+        <div class="card-header"><div class="card-title"><i class="fa-solid fa-chart-bar"></i> ملخص الشهر الحالي</div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+            <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:10px">
+              <div style="font-size:20px;font-weight:600;color:var(--green);font-family:'IBM Plex Mono',monospace">+1,240</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">وحدات واردة</div>
+            </div>
+            <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:10px">
+              <div style="font-size:20px;font-weight:600;color:var(--gold);font-family:'IBM Plex Mono',monospace">-875</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">وحدات صادرة</div>
+            </div>
+            <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:10px">
+              <div style="font-size:20px;font-weight:600;color:var(--blue);font-family:'IBM Plex Mono',monospace">32</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">عملية توريد</div>
+            </div>
+            <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:10px">
+              <div style="font-size:20px;font-weight:600;color:var(--purple);font-family:'IBM Plex Mono',monospace">97.2%</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">دقة الجرد</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ USERS ══ -->
+    <div class="page" id="page-users">
+      <div class="page-header">
+        <div class="page-title">إدارة المستخدمين والصلاحيات</div>
+        <button class="tb-btn primary" onclick="showModal('addUserModal')"><i class="fa-solid fa-user-plus"></i> مستخدم جديد</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>المستخدم</th><th>الدور</th><th>الصلاحيات</th><th>آخر دخول</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody id="usersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="page" id="page-settings">
+      <div class="page-header"><div class="page-title">إعدادات النظام</div></div>
+      <div style="max-width:600px">
+        <div class="settings-section">
+          <div class="settings-title">إعدادات المخزون</div>
+          <div class="settings-row">
+            <div><div class="sr-label">حد الإنذار الافتراضي</div><div class="sr-sub">الكمية التي تُفعّل التنبيه</div></div>
+            <input type="number" class="form-input" value="10" style="width:80px;text-align:center"/>
+          </div>
+          <div class="settings-row">
+            <div><div class="sr-label">تنبيهات البريد الإلكتروني</div><div class="sr-sub">إرسال تنبيه عند نقص المخزون</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="settings-row">
+            <div><div class="sr-label">السماح بالمخزون السالب</div><div class="sr-sub">السماح بتسجيل صادر أكثر من المتاح</div></div>
+            <button class="toggle" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="settings-row">
+            <div><div class="sr-label">الجرد الدوري التلقائي</div><div class="sr-sub">تذكير شهري بموعد الجرد</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-title">إعدادات النظام</div>
+          <div class="settings-row">
+            <div><div class="sr-label">اسم المستودع الرئيسي</div></div>
+            <input type="text" class="form-input" value="المستودع المركزي" style="width:200px"/>
+          </div>
+          <div class="settings-row">
+            <div><div class="sr-label">العملة الافتراضية</div></div>
+            <select class="form-select" style="width:130px"><option>جنيه مصري (EGP)</option><option>ريال سعودي (SAR)</option><option>دولار (USD)</option></select>
+          </div>
+          <div class="settings-row">
+            <div><div class="sr-label">حفظ تلقائي للسجلات</div><div class="sr-sub">نسخ احتياطي يومي</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <button class="tb-btn primary" onclick="showToast('تم حفظ الإعدادات بنجاح','success')">
+            <i class="fa-solid fa-floppy-disk"></i> حفظ الإعدادات
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ══ MODALS ══ -->
+
+<!-- Add Item Modal -->
+<div class="modal-overlay" id="addItemModal" onclick="closeModal(this)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">إضافة صنف جديد</div>
+      <button class="modal-close" onclick="closeModal(document.getElementById('addItemModal'))"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field full"><div class="form-label">اسم الصنف *</div><input class="form-input" id="ni-name" placeholder="مثال: لابتوب ديل إنسبايرون"/></div>
+        <div class="form-field"><div class="form-label">الرمز / الكود</div><input class="form-input" id="ni-sku" placeholder="SKU-0001"/></div>
+        <div class="form-field"><div class="form-label">الفئة *</div>
+          <select class="form-select" id="ni-cat">
+            <option>إلكترونيات</option><option>مستلزمات</option><option>أدوات</option><option>أخرى</option>
+          </select>
+        </div>
+        <div class="form-field"><div class="form-label">الكمية الابتدائية</div><input class="form-input" type="number" id="ni-qty" placeholder="0"/></div>
+        <div class="form-field"><div class="form-label">سعر الوحدة (ج.م)</div><input class="form-input" type="number" id="ni-price" placeholder="0.00"/></div>
+        <div class="form-field"><div class="form-label">المستودع</div>
+          <select class="form-select" id="ni-wh">
+            <option>المستودع المركزي</option><option>مستودع B</option><option>مستودع C</option>
+          </select>
+        </div>
+        <div class="form-field"><div class="form-label">حد الإنذار</div><input class="form-input" type="number" id="ni-min" placeholder="10"/></div>
+        <div class="form-field full"><div class="form-label">ملاحظات</div><input class="form-input" id="ni-notes" placeholder="أي معلومات إضافية..."/></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tb-btn" onclick="closeModal(document.getElementById('addItemModal'))">إلغاء</button>
+      <button class="tb-btn primary" onclick="addItem()"><i class="fa-solid fa-plus"></i> إضافة الصنف</button>
+    </div>
+  </div>
+</div>
+
+<!-- Movement Modal -->
+<div class="modal-overlay" id="moveModal" onclick="closeModal(this)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">تسجيل حركة مخزون</div>
+      <button class="modal-close" onclick="closeModal(document.getElementById('moveModal'))"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field full">
+          <div class="form-label">نوع الحركة *</div>
+          <select class="form-select" id="mv-type">
+            <option value="in">وارد (استلام بضاعة)</option>
+            <option value="out">صادر (صرف بضاعة)</option>
+            <option value="transfer">تحويل بين مستودعات</option>
+          </select>
+        </div>
+        <div class="form-field full">
+          <div class="form-label">الصنف *</div>
+          <select class="form-select" id="mv-item"></select>
+        </div>
+        <div class="form-field"><div class="form-label">الكمية *</div><input class="form-input" type="number" id="mv-qty" placeholder="0" min="1"/></div>
+        <div class="form-field"><div class="form-label">التاريخ</div><input class="form-input" type="date" id="mv-date"/></div>
+        <div class="form-field full"><div class="form-label">ملاحظات</div><input class="form-input" id="mv-notes" placeholder="رقم الفاتورة أو سبب الصرف..."/></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tb-btn" onclick="closeModal(document.getElementById('moveModal'))">إلغاء</button>
+      <button class="tb-btn primary" onclick="recordMovement()"><i class="fa-solid fa-check"></i> تسجيل الحركة</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal-overlay" id="addUserModal" onclick="closeModal(this)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">إضافة مستخدم جديد</div>
+      <button class="modal-close" onclick="closeModal(document.getElementById('addUserModal'))"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field full"><div class="form-label">الاسم الكامل *</div><input class="form-input" id="nu-name" placeholder="اسم المستخدم"/></div>
+        <div class="form-field"><div class="form-label">البريد الإلكتروني *</div><input class="form-input" type="email" id="nu-email" placeholder="user@company.com"/></div>
+        <div class="form-field"><div class="form-label">الدور *</div>
+          <select class="form-select" id="nu-role">
+            <option value="admin">مدير النظام</option>
+            <option value="manager">مدير مخزون</option>
+            <option value="operator">أمين مخزون</option>
+            <option value="viewer">مشاهد فقط</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tb-btn" onclick="closeModal(document.getElementById('addUserModal'))">إلغاء</button>
+      <button class="tb-btn primary" onclick="addUser()"><i class="fa-solid fa-user-plus"></i> إضافة</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Supplier Modal -->
+<div class="modal-overlay" id="addSupplierModal" onclick="closeModal(this)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">إضافة مورد جديد</div>
+      <button class="modal-close" onclick="closeModal(document.getElementById('addSupplierModal'))"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field full"><div class="form-label">اسم الشركة / المورد *</div><input class="form-input" id="ns-name" placeholder="اسم المورد"/></div>
+        <div class="form-field"><div class="form-label">التخصص</div><input class="form-input" id="ns-spec" placeholder="إلكترونيات، مستلزمات..."/></div>
+        <div class="form-field"><div class="form-label">رقم التواصل</div><input class="form-input" id="ns-phone" placeholder="01xxxxxxxxx"/></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tb-btn" onclick="closeModal(document.getElementById('addSupplierModal'))">إلغاء</button>
+      <button class="tb-btn primary" onclick="addSupplier()"><i class="fa-solid fa-plus"></i> إضافة المورد</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal-overlay" id="exportModal" onclick="closeModal(this)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">تصدير البيانات</div>
+      <button class="modal-close" onclick="closeModal(document.getElementById('exportModal'))"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="form-field"><div class="form-label">نوع البيانات</div>
+          <select class="form-select"><option>المخزون الكامل</option><option>حركة المخزون</option><option>التنبيهات</option><option>الموردون</option></select>
+        </div>
+        <div class="form-field"><div class="form-label">الصيغة</div>
+          <select class="form-select"><option>Excel (.xlsx)</option><option>PDF</option><option>CSV</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tb-btn" onclick="closeModal(document.getElementById('exportModal'))">إلغاء</button>
+      <button class="tb-btn primary" onclick="closeModal(document.getElementById('exportModal'));showToast('تم تصدير الملف بنجاح','success')"><i class="fa-solid fa-download"></i> تصدير</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ── DATA ──
+let inventory = [
+  {id:1,name:'لابتوب ديل إنسبايرون 15',sku:'LAP-001',cat:'إلكترونيات',qty:24,min:5,price:18500,wh:'المستودع المركزي',active:true},
+  {id:2,name:'طابعة HP LaserJet',sku:'PRT-002',cat:'إلكترونيات',qty:8,min:3,price:4200,wh:'مستودع B',active:true},
+  {id:3,name:'ورق A4 ريم (500 ورقة)',sku:'PPR-003',cat:'مستلزمات',qty:3,min:10,price:120,wh:'المستودع المركزي',active:true},
+  {id:4,name:'أحبار طابعة ملونة',sku:'INK-004',cat:'مستلزمات',qty:0,min:5,price:350,wh:'مستودع B',active:true},
+  {id:5,name:'مفك براغي كهربائي',sku:'TL-005',cat:'أدوات',qty:15,min:3,price:780,wh:'مستودع C',active:true},
+  {id:6,name:'هارد ديسك خارجي 1TB',sku:'HDD-006',cat:'إلكترونيات',qty:42,min:10,price:1250,wh:'المستودع المركزي',active:true},
+  {id:7,name:'سلك HDMI 1.8م',sku:'CBL-007',cat:'مستلزمات',qty:60,min:15,price:95,wh:'المستودع المركزي',active:true},
+  {id:8,name:'مفاتيح كهربائية شنايدر',sku:'ELC-008',cat:'أدوات',qty:2,min:8,price:240,wh:'مستودع C',active:true},
+  {id:9,name:'شاشة سامسونج 24 بوصة',sku:'MON-009',cat:'إلكترونيات',qty:11,min:4,price:3800,wh:'المستودع المركزي',active:true},
+  {id:10,name:'فلاشة USB 32GB',sku:'USB-010',cat:'مستلزمات',qty:88,min:20,price:85,wh:'مستودع B',active:true},
+];
+
+let movements = [
+  {id:'MV-0028',item:'لابتوب ديل إنسبايرون 15',type:'in',qty:5,from:'المورد: شركة ديل',user:'أحمد',date:'2025-05-20',notes:'فاتورة #1234'},
+  {id:'MV-0027',item:'ورق A4 ريم',type:'out',qty:10,from:'قسم: الإدارة',user:'سارة',date:'2025-05-19',notes:'صرف شهري'},
+  {id:'MV-0026',item:'هارد ديسك خارجي 1TB',type:'in',qty:20,from:'المورد: كمبيوترلاند',user:'محمد',date:'2025-05-18',notes:'طلب شراء #88'},
+  {id:'MV-0025',item:'سلك HDMI',type:'transfer',qty:15,from:'مستودع B → المركزي',user:'أحمد',date:'2025-05-17',notes:'تحويل داخلي'},
+  {id:'MV-0024',item:'طابعة HP',type:'out',qty:2,from:'قسم: المحاسبة',user:'سارة',date:'2025-05-16',notes:'تجهيز مكاتب جديدة'},
+  {id:'MV-0023',item:'أحبار طابعة',type:'out',qty:5,from:'قسم: الإنتاج',user:'محمد',date:'2025-05-15',notes:''},
+];
+
+let suppliers = [
+  {id:1,name:'شركة ديل للتقنية',spec:'إلكترونيات',phone:'01000000001',items:45,lastDate:'2025-05-20',active:true},
+  {id:2,name:'كمبيوترلاند',spec:'إلكترونيات - تخزين',phone:'01000000002',items:28,lastDate:'2025-05-18',active:true},
+  {id:3,name:'مكتبة الرشيد',spec:'مستلزمات مكتبية',phone:'01000000003',items:62,lastDate:'2025-05-10',active:true},
+  {id:4,name:'شركة شنايدر',spec:'أدوات كهربائية',phone:'01000000004',items:18,lastDate:'2025-04-30',active:false},
+];
+
+let users = [
+  {id:1,name:'المدير العام',email:'admin@stockpro.com',role:'admin',lastLogin:'منذ دقيقتين',active:true},
+  {id:2,name:'أحمد سالم',email:'ahmed@stockpro.com',role:'manager',lastLogin:'منذ ساعة',active:true},
+  {id:3,name:'سارة محمود',email:'sara@stockpro.com',role:'operator',lastLogin:'أمس',active:true},
+  {id:4,name:'محمد علي',email:'mo@stockpro.com',role:'operator',lastLogin:'منذ 3 أيام',active:true},
+  {id:5,name:'فاطمة حسن',email:'fatma@stockpro.com',role:'viewer',lastLogin:'منذ أسبوع',active:false},
+];
+
+const roleTitles = {admin:'مدير النظام',manager:'مدير مخزون',operator:'أمين مخزون',viewer:'مشاهد'};
+const roleColors = {admin:'badge-purple',manager:'badge-blue',operator:'badge-yellow',viewer:'badge-gray'};
+const avatarColors = ['#6366f1','#22c55e','#f0b429','#ef4444','#06b6d4'];
+
+// ── NAVIGATION ──
+function navTo(page) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const nav = document.querySelector(`.nav-item[data-page="${page}"]`);
+  const pg  = document.getElementById(`page-${page}`);
+  if(nav) nav.classList.add('active');
+  if(pg)  pg.classList.add('active');
+  if(page==='inventory')  renderInventory();
+  if(page==='movements')  renderMovements();
+  if(page==='suppliers')  renderSuppliers();
+  if(page==='alerts')     renderAlertsPage();
+  if(page==='users')      renderUsers();
+}
+document.querySelectorAll('.nav-item').forEach(n=>{
+  n.addEventListener('click',()=>navTo(n.dataset.page));
+});
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+// ── RENDER INVENTORY ──
+function getStatus(item){
+  if(item.qty===0) return {label:'نفد',cls:'badge-red'};
+  if(item.qty<=item.min) return {label:'نقص',cls:'badge-yellow'};
+  return {label:'متوفر',cls:'badge-green'};
+}
+function getBarPct(item){
+  const max=Math.max(item.qty,item.min*3,1);
+  return Math.min(100,Math.round(item.qty/max*100));
+}
+function getBarCls(item){
+  if(item.qty===0) return 'fill-red';
+  if(item.qty<=item.min) return 'fill-yellow';
+  return 'fill-green';
+}
+
+let invTab='all';
+function setTab(el,t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  invTab=t;
+  renderInventory();
+}
+
+function filterInventory(val){renderInventory();}
+
+function renderInventory(){
+  const search=(document.getElementById('invSearch')?.value||'').toLowerCase();
+  const cat=document.getElementById('catFilter')?.value||'';
+  let data=inventory.filter(i=>{
+    if(cat && i.cat!==cat) return false;
+    if(search && !i.name.toLowerCase().includes(search) && !i.sku.toLowerCase().includes(search)) return false;
+    if(invTab==='active' && i.qty<=i.min) return false;
+    if(invTab==='low' && (i.qty===0||i.qty>i.min)) return false;
+    if(invTab==='out' && i.qty!==0) return false;
+    return true;
+  });
+  const tb=document.getElementById('inventoryTable');
+  if(!tb) return;
+  if(!data.length){tb.innerHTML=`<tr><td colspan="9"><div class="empty"><i class="fa-solid fa-box-open"></i><p>لا توجد أصناف</p></div></td></tr>`;return;}
+  const st=getStatus;
+  tb.innerHTML=data.map(i=>{
+    const s=st(i);
+    const pct=getBarPct(i);
+    return `<tr>
+      <td>${i.name}</td>
+      <td><span class="td-mono">${i.sku}</span></td>
+      <td><span class="badge badge-gray">${i.cat}</span></td>
+      <td><span class="td-mono" style="color:${i.qty===0?'var(--red)':i.qty<=i.min?'var(--gold)':'var(--text)'}">${i.qty}</span></td>
+      <td><span style="font-size:12px;color:var(--muted2)">${i.wh}</span></td>
+      <td><span class="td-mono">${i.price.toLocaleString('ar-EG')} ج.م</span></td>
+      <td><span class="badge ${s.cls}">${s.label}</span></td>
+      <td><div class="stock-bar"><div class="stock-fill ${getBarCls(i)}" style="width:${pct}%"></div></div></td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="card-btn" onclick="quickMove(${i.id})" title="تسجيل حركة"><i class="fa-solid fa-right-left"></i></button>
+          <button class="card-btn" onclick="deleteItem(${i.id})" title="حذف" style="color:var(--red)"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  const cnt=document.getElementById('invCount');
+  if(cnt) cnt.textContent=`${data.length} صنف`;
+}
+
+function deleteItem(id){
+  inventory=inventory.filter(i=>i.id!==id);
+  renderInventory();
+  updateKPIs();
+  showToast('تم حذف الصنف','error');
+}
+function quickMove(id){
+  const item=inventory.find(i=>i.id===id);
+  if(!item) return;
+  populateMoveSelect();
+  document.getElementById('mv-item').value=id;
+  showModal('moveModal');
+}
+
+// ── RENDER MOVEMENTS ──
+function renderMovements(){
+  const typeF=document.getElementById('movTypeFilter')?.value||'';
+  const dateF=document.getElementById('movDateFilter')?.value||'';
+  let data=movements.filter(m=>{
+    if(typeF && m.type!==typeF) return false;
+    if(dateF && m.date!==dateF) return false;
+    return true;
+  });
+  const tb=document.getElementById('movementsTable');
+  if(!tb) return;
+  const typeInfo={in:{label:'وارد',cls:'badge-green',icon:'fa-arrow-down'},out:{label:'صادر',cls:'badge-red',icon:'fa-arrow-up'},transfer:{label:'تحويل',cls:'badge-blue',icon:'fa-right-left'}};
+  tb.innerHTML=data.map(m=>{
+    const t=typeInfo[m.type]||{label:m.type,cls:'badge-gray',icon:'fa-circle'};
+    return `<tr>
+      <td><span class="td-mono" style="color:var(--muted2)">${m.id}</span></td>
+      <td>${m.item}</td>
+      <td><span class="badge ${t.cls}"><i class="fa-solid ${t.icon}"></i> ${t.label}</span></td>
+      <td><span class="td-mono">${m.qty}</span></td>
+      <td style="font-size:12px;color:var(--muted2)">${m.from}</td>
+      <td style="font-size:12px">${m.user}</td>
+      <td><span class="td-mono" style="font-size:11px;color:var(--muted)">${m.date}</span></td>
+      <td style="font-size:12px;color:var(--muted2)">${m.notes||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+function filterMovements(){renderMovements();}
+
+// ── RENDER SUPPLIERS ──
+function renderSuppliers(){
+  const tb=document.getElementById('suppliersTable');
+  if(!tb) return;
+  tb.innerHTML=suppliers.map(s=>`<tr>
+    <td>${s.name}</td>
+    <td><span class="badge badge-gray">${s.spec}</span></td>
+    <td style="font-size:12px;color:var(--muted2)">${s.phone}</td>
+    <td><span class="td-mono">${s.items}</span></td>
+    <td><span class="td-mono" style="font-size:11px;color:var(--muted)">${s.lastDate}</span></td>
+    <td><span class="badge ${s.active?'badge-green':'badge-gray'}">${s.active?'نشط':'غير نشط'}</span></td>
+    <td><button class="card-btn" onclick="deleteSupplier(${s.id})" style="color:var(--red)"><i class="fa-solid fa-trash"></i></button></td>
+  </tr>`).join('');
+}
+function deleteSupplier(id){suppliers=suppliers.filter(s=>s.id!==id);renderSuppliers();showToast('تم حذف المورد','error');}
+
+// ── RENDER ALERTS ──
+function renderAlertsPage(){
+  const low=inventory.filter(i=>i.qty<=i.min);
+  const pg=document.getElementById('alertsPage');
+  if(!pg) return;
+  if(!low.length){pg.innerHTML=`<div class="empty"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i><p>لا توجد تنبيهات حالياً — المخزون في حالة ممتازة</p></div>`;return;}
+  pg.innerHTML=`<div style="margin-bottom:12px;font-size:12px;color:var(--muted)">${low.length} صنف يحتاج انتباهاً</div>`+
+  low.map(i=>`
+    <div class="alert-row" style="margin-bottom:8px;${i.qty===0?'background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3)':''}">
+      <i class="fa-solid ${i.qty===0?'fa-ban':'fa-triangle-exclamation'}"></i>
+      <div style="flex:1">
+        <div class="al-name">${i.name}</div>
+        <div style="font-size:11px;color:var(--muted)">${i.sku} — ${i.wh}</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-left:8px">المتوفر: <span class="al-qty">${i.qty}</span> / الحد: ${i.min}</div>
+      <button class="al-btn" onclick="showToast('تم إرسال طلب إعادة توريد لـ ${i.name}','success')">إعادة طلب</button>
+    </div>`).join('');
+  document.getElementById('alertBadge').textContent=low.length;
+}
+
+function reorderAll(){
+  const low=inventory.filter(i=>i.qty<=i.min);
+  if(!low.length){showToast('لا توجد أصناف تحتاج إعادة طلب','info');return;}
+  showToast(`تم إرسال ${low.length} طلبات إعادة توريد`,'success');
+}
+
+// ── RENDER USERS ──
+function renderUsers(){
+  const tb=document.getElementById('usersTable');
+  if(!tb) return;
+  const perms={admin:'كل الصلاحيات',manager:'إضافة وتعديل',operator:'إضافة فقط',viewer:'عرض فقط'};
+  tb.innerHTML=users.map((u,i)=>`<tr class="user-row">
+    <td>
+      <div class="uavatar" style="background:${avatarColors[i%avatarColors.length]}">${u.name.charAt(0)}</div>
+      <div><div style="font-weight:500">${u.name}</div><div style="font-size:11px;color:var(--muted)">${u.email}</div></div>
+    </td>
+    <td><span class="badge ${roleColors[u.role]}">${roleTitles[u.role]}</span></td>
+    <td style="font-size:12px;color:var(--muted2)">${perms[u.role]}</td>
+    <td style="font-size:12px;color:var(--muted)">${u.lastLogin}</td>
+    <td><span class="badge ${u.active?'badge-green':'badge-gray'}">${u.active?'نشط':'معطّل'}</span></td>
+    <td>
+      <div style="display:flex;gap:4px">
+        <button class="card-btn" onclick="toggleUser(${u.id})">${u.active?'تعطيل':'تفعيل'}</button>
+        <button class="card-btn" onclick="deleteUser(${u.id})" style="color:var(--red)"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </td>
+  </tr>`).join('');
+}
+function toggleUser(id){const u=users.find(x=>x.id===id);if(u){u.active=!u.active;renderUsers();showToast(u.active?'تم تفعيل المستخدم':'تم تعطيل المستخدم',u.active?'success':'info');}}
+function deleteUser(id){users=users.filter(u=>u.id!==id);renderUsers();showToast('تم حذف المستخدم','error');}
+
+// ── RENDER DASHBOARD WIDGETS ──
+function renderActivity(){
+  const acts=[
+    {icon:'fa-arrow-down',bg:'rgba(34,197,94,.15)',col:'var(--green)',title:'استُلم 5 لابتوب ديل',sub:'من المورد: شركة ديل',time:'منذ 12د'},
+    {icon:'fa-arrow-up',bg:'rgba(239,68,68,.15)',col:'var(--red)',title:'صُرف 10 ريم ورق',sub:'لقسم: الإدارة',time:'منذ 1س'},
+    {icon:'fa-right-left',bg:'rgba(59,130,246,.15)',col:'var(--blue)',title:'تحويل 15 سلك HDMI',sub:'من مستودع B → المركزي',time:'منذ 3س'},
+    {icon:'fa-plus',bg:'rgba(168,85,247,.15)',col:'var(--purple)',title:'أُضيف صنف جديد',sub:'هارد ديسك خارجي 1TB',time:'أمس'},
+    {icon:'fa-triangle-exclamation',bg:'rgba(239,68,68,.15)',col:'var(--red)',title:'تنبيه: نفد المخزون',sub:'أحبار طابعة ملونة — 0 وحدة',time:'أمس'},
+  ];
+  const el=document.getElementById('activityList');
+  if(!el) return;
+  el.innerHTML=acts.map(a=>`
+    <div class="act-item">
+      <div class="act-icon" style="background:${a.bg};color:${a.col}"><i class="fa-solid ${a.icon}"></i></div>
+      <div class="act-body"><div class="act-title">${a.title}</div><div class="act-sub">${a.sub}</div></div>
+      <div class="act-time">${a.time}</div>
+    </div>`).join('');
+}
+
+function renderDashAlerts(){
+  const low=inventory.filter(i=>i.qty<=i.min).slice(0,3);
+  const el=document.getElementById('dashAlerts');
+  if(!el) return;
+  el.innerHTML=low.length?low.map(i=>`
+    <div class="alert-row">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <div class="al-name">${i.name}</div>
+      <div class="al-qty">${i.qty}</div>
+      <button class="al-btn" onclick="showToast('تم إرسال طلب توريد','success')">طلب</button>
+    </div>`).join(''):`<div class="empty"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i><p>لا تنبيهات</p></div>`;
+}
+
+function renderBarChart(period){
+  const el=document.getElementById('barChart');
+  if(!el) return;
+  const datasets={
+    week:  [{in:[12,8,15,6,20,9,14],out:[8,5,10,4,14,7,10]}],
+    month: [{in:[45,62,38,55,70,48,60,52,44,68,73,55,62,48,55,60,42,58,66,50,45,72,60,55,48,62,70,44,58,65],out:[30,45,28,40,52,35,44,38,32,50,55,42,46,36,42,45,32,44,50,38,34,54,46,40,36,48,52,33,44,48]}],
+    quarter:[{in:[180,220,195,240,210,260,230,285,250,300,270,315],out:[130,160,145,180,155,195,175,215,190,225,205,240]}]
+  };
+  const d=datasets[period]||datasets.month;
+  const ins=d[0].in;
+  const outs=d[0].out;
+  const labels=period==='week'?['أحد','اثن','ثلاث','أرب','خمس','جمع','سبت']:
+    period==='quarter'?['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر']:
+    ins.map((_,i)=>`${i+1}`);
+  const maxVal=Math.max(...ins,...outs);
+  const H=120;
+  const show=ins.slice(-12);
+  const showO=outs.slice(-12);
+  const showL=labels.slice(-12);
+  el.innerHTML=show.map((v,i)=>{
+    const h1=Math.round(v/maxVal*(H-20));
+    const h2=Math.round(showO[i]/maxVal*(H-20));
+    return `<div class="bar-col" style="gap:2px">
+      <div style="display:flex;gap:2px;align-items:flex-end;height:${H-20}px">
+        <div class="bar-fill" style="background:var(--green);height:${h1}px;flex:1" data-val="${v}"></div>
+        <div class="bar-fill" style="background:var(--gold);height:${h2}px;flex:1" data-val="${showO[i]}"></div>
+      </div>
+      <div class="bar-label">${showL[i]}</div>
+    </div>`;
+  }).join('');
+}
+function updateCharts(period){renderBarChart(period);}
+
+// ── KPIs ──
+function updateKPIs(){
+  const k=document.getElementById('k-total');
+  if(k) k.textContent=inventory.length;
+  const v=document.getElementById('k-value');
+  if(v) v.textContent=Math.round(inventory.reduce((a,i)=>a+i.qty*i.price,0)).toLocaleString('ar-EG');
+  const low=inventory.filter(i=>i.qty<=i.min).length;
+  const kl=document.getElementById('k-low');
+  if(kl) kl.textContent=low;
+  const ab=document.getElementById('alertBadge');
+  if(ab) ab.textContent=low;
+}
+
+// ── MODALS ──
+function showModal(id){
+  const m=document.getElementById(id);
+  if(m) m.classList.add('open');
+  if(id==='moveModal') populateMoveSelect();
+  const d=document.getElementById('mv-date');
+  if(d && !d.value) d.valueAsDate=new Date();
+}
+function closeModal(overlay){overlay.classList.remove('open');}
+
+function populateMoveSelect(){
+  const sel=document.getElementById('mv-item');
+  if(!sel) return;
+  sel.innerHTML=inventory.map(i=>`<option value="${i.id}">${i.name} (متوفر: ${i.qty})</option>`).join('');
+}
+
+// ── ACTIONS ──
+function addItem(){
+  const name=document.getElementById('ni-name').value.trim();
+  if(!name){showToast('أدخل اسم الصنف','error');return;}
+  const newId=Math.max(...inventory.map(i=>i.id))+1;
+  inventory.push({
+    id:newId,
+    name,
+    sku:document.getElementById('ni-sku').value||`SKU-${String(newId).padStart(3,'0')}`,
+    cat:document.getElementById('ni-cat').value,
+    qty:parseInt(document.getElementById('ni-qty').value)||0,
+    min:parseInt(document.getElementById('ni-min').value)||10,
+    price:parseFloat(document.getElementById('ni-price').value)||0,
+    wh:document.getElementById('ni-wh').value,
+    active:true
+  });
+  closeModal(document.getElementById('addItemModal'));
+  ['ni-name','ni-sku','ni-qty','ni-price','ni-notes','ni-min'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  updateKPIs();
+  renderInventory();
+  showToast('تم إضافة الصنف بنجاح','success');
+}
+
+function recordMovement(){
+  const itemId=parseInt(document.getElementById('mv-item').value);
+  const qty=parseInt(document.getElementById('mv-qty').value)||0;
+  const type=document.getElementById('mv-type').value;
+  if(!qty||qty<1){showToast('أدخل كمية صحيحة','error');return;}
+  const item=inventory.find(i=>i.id===itemId);
+  if(!item) return;
+  if(type==='out' && item.qty<qty){showToast('الكمية المطلوبة أكبر من المتوفر','error');return;}
+  if(type==='in') item.qty+=qty;
+  else if(type==='out') item.qty-=qty;
+  const newMv={
+    id:`MV-${String(movements.length+1).padStart(4,'0')}`,
+    item:item.name,
+    type,
+    qty,
+    from:type==='in'?'استلام':'صرف',
+    user:'المدير',
+    date:document.getElementById('mv-date').value||new Date().toISOString().slice(0,10),
+    notes:document.getElementById('mv-notes').value
+  };
+  movements.unshift(newMv);
+  closeModal(document.getElementById('moveModal'));
+  document.getElementById('mv-qty').value='';
+  document.getElementById('mv-notes').value='';
+  updateKPIs();
+  renderInventory();
+  renderDashAlerts();
+  showToast(`تم تسجيل حركة ${type==='in'?'وارد':'صادر'} للصنف: ${item.name}`,'success');
+}
+
+function addUser(){
+  const name=document.getElementById('nu-name').value.trim();
+  const email=document.getElementById('nu-email').value.trim();
+  if(!name||!email){showToast('أدخل الاسم والبريد','error');return;}
+  const newId=Math.max(...users.map(u=>u.id))+1;
+  users.push({id:newId,name,email,role:document.getElementById('nu-role').value,lastLogin:'الآن',active:true});
+  closeModal(document.getElementById('addUserModal'));
+  ['nu-name','nu-email'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  renderUsers();
+  showToast('تم إضافة المستخدم بنجاح','success');
+}
+
+function addSupplier(){
+  const name=document.getElementById('ns-name').value.trim();
+  if(!name){showToast('أدخل اسم المورد','error');return;}
+  const newId=Math.max(...suppliers.map(s=>s.id))+1;
+  suppliers.push({id:newId,name,spec:document.getElementById('ns-spec').value,phone:document.getElementById('ns-phone').value,items:0,lastDate:'—',active:true});
+  closeModal(document.getElementById('addSupplierModal'));
+  ['ns-name','ns-spec','ns-phone'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  renderSuppliers();
+  showToast('تم إضافة المورد بنجاح','success');
+}
+
+// ── SEARCH ──
+function handleSearch(val){
+  if(!val.trim()) return;
+  navTo('inventory');
+  document.getElementById('invSearch').value=val;
+  renderInventory();
+}
+
+// ── TOAST ──
+function showToast(msg,type='info'){
+  const icons={success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info'};
+  const wrap=document.getElementById('toastWrap');
+  const t=document.createElement('div');
+  t.className=`toast t-${type}`;
+  t.innerHTML=`<i class="fa-solid ${icons[type]||icons.info}"></i><span>${msg}</span>`;
+  wrap.appendChild(t);
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>t.classList.add('show'));});
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},3200);
+}
+
+// ── INIT ──
+renderBarChart('month');
+renderActivity();
+renderDashAlerts();
+updateKPIs();
+</script>
+</body>
+</html>
