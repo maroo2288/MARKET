@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediBook Pro — Clinic Management System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cairo:wght@400;500;600;700;800&display=swap">
+</head>
+<body>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cairo:wght@400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0A0A0F;--ink2:#3D3D4E;--ink3:#8B8B9E;--ink4:#C4C4D0;
+  --surface:#FFFFFF;--surface2:#F7F7FB;--surface3:#F0F0F6;--surface4:#E8E8F0;
+  --accent:#2563EB;--accent2:#1D4ED8;--accent-s:#EFF6FF;--accent-t:#BFDBFE;
+  --green:#059669;--green-s:#ECFDF5;--green-t:#A7F3D0;
+  --amber:#D97706;--amber-s:#FFFBEB;--amber-t:#FDE68A;
+  --red:#DC2626;--red-s:#FEF2F2;--red-t:#FECACA;
+  --purple:#7C3AED;--purple-s:#F5F3FF;--purple-t:#DDD6FE;
+  --b:rgba(0,0,0,0.07);--b2:rgba(0,0,0,0.12);
+  --r:8px;--rl:12px;--rxl:16px;
+}
+body{font-family:'Inter',sans-serif;color:var(--ink);background:var(--surface2);font-size:13px;line-height:1.5}
+
+/* ═══════════════════ SHELL ═══════════════════ */
+.shell{display:grid;grid-template-columns:64px 1fr;grid-template-rows:auto 1fr;min-height:780px;background:var(--surface2)}
+
+/* ═══════════════════ TOPBAR ═══════════════════ */
+.topbar{grid-column:1/-1;background:var(--surface);border-bottom:1px solid var(--b);height:52px;display:flex;align-items:center;padding:0 1rem;gap:12px;position:sticky;top:0;z-index:50}
+.logo-mark{width:32px;height:32px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-mark svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round}
+.logo-text{font-weight:800;font-size:15px;letter-spacing:-0.4px;color:var(--ink)}
+.logo-text span{color:var(--accent)}
+.topbar-center{flex:1;max-width:380px;margin:0 auto;position:relative}
+.top-search{width:100%;background:var(--surface2);border:1px solid var(--b2);border-radius:8px;padding:7px 12px 7px 34px;font-size:13px;font-family:'Inter',sans-serif;color:var(--ink);outline:none;transition:all 0.2s}
+.top-search:focus{background:var(--surface);border-color:var(--accent-t);box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink3);font-size:15px;pointer-events:none}
+.topbar-right{display:flex;align-items:center;gap:6px;margin-right:0}
+.tb-btn{background:transparent;border:1px solid var(--b2);border-radius:8px;padding:6px 8px;cursor:pointer;color:var(--ink2);font-size:16px;line-height:1;transition:all 0.15s;position:relative;display:flex;align-items:center;gap:5px}
+.tb-btn:hover{background:var(--surface2);color:var(--ink)}
+.tb-notif{position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--surface)}
+.doctor-chip{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--b2);border-radius:8px;padding:4px 10px 4px 4px;cursor:pointer}
+.doc-avatar{width:28px;height:28px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700}
+.doc-name{font-size:12px;font-weight:600}
+.doc-role{font-size:10px;color:var(--ink3)}
+
+/* ═══════════════════ ICON NAV ═══════════════════ */
+.icon-nav{background:var(--surface);border-right:1px solid var(--b);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:2px;grid-row:2}
+.nav-item{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink3);font-size:19px;transition:all 0.15s;position:relative}
+.nav-item:hover{background:var(--surface2);color:var(--ink2)}
+.nav-item.on{background:var(--accent-s);color:var(--accent)}
+.nav-item .n-dot{position:absolute;top:8px;right:8px;width:6px;height:6px;background:var(--red);border-radius:50%;border:1.5px solid var(--surface)}
+.nav-sep{width:28px;height:1px;background:var(--b);margin:6px 0}
+.nav-bot{margin-top:auto}
+
+/* ═══════════════════ MAIN ═══════════════════ */
+.main{overflow-y:auto;padding:0}
+.view{display:none}
+.view.on{display:block}
+
+/* ═══════════════════ PAGE HEADER ═══════════════════ */
+.ph{padding:20px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.ph-title{font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--ink)}
+.ph-sub{font-size:13px;color:var(--ink3);margin-top:2px}
+.ph-actions{display:flex;gap:8px}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background 0.15s;white-space:nowrap}
+.btn-primary:hover{background:var(--accent2)}
+.btn-ghost{background:transparent;color:var(--ink2);border:1px solid var(--b2);border-radius:8px;padding:8px 14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.15s}
+.btn-ghost:hover{background:var(--surface3);border-color:var(--b2)}
+
+/* ═══════════════════ DASHBOARD ═══════════════════ */
+.dash-body{padding:0 24px 24px}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--b);border-radius:var(--rl);padding:16px;position:relative;overflow:hidden;transition:border-color 0.15s}
+.kpi:hover{border-color:var(--b2)}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.kpi-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px}
+.kpi-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.kpi-val{font-size:26px;font-weight:800;letter-spacing:-0.8px;color:var(--ink);line-height:1}
+.kpi-lbl{font-size:12px;color:var(--ink3);margin-top:4px}
+.kpi-bar{height:3px;background:var(--surface3);border-radius:2px;margin-top:12px;overflow:hidden}
+.kpi-fill{height:100%;border-radius:2px;transition:width 1s ease}
+
+.dash-grid{display:grid;grid-template-columns:1fr 300px;gap:16px;margin-bottom:16px}
+
+/* SCHEDULE CARD */
+.sched-card{background:var(--surface);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden}
+.sched-head{padding:14px 16px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
+.sched-head-title{font-size:14px;font-weight:700}
+.day-tabs{display:flex;gap:4px}
+.day-tab{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--ink3);border:1px solid transparent;transition:all 0.15s}
+.day-tab:hover{background:var(--surface2);color:var(--ink)}
+.day-tab.on{background:var(--accent);color:#fff}
+.timeline-wrap{padding:16px}
+.tl-row{display:flex;gap:12px;margin-bottom:14px;cursor:pointer;border-radius:var(--r);padding:8px;transition:background 0.15s;position:relative}
+.tl-row:hover{background:var(--surface2)}
+.tl-time{width:46px;text-align:right;flex-shrink:0;padding-top:2px}
+.tl-time-main{font-size:12px;font-weight:700;color:var(--ink)}
+.tl-time-ampm{font-size:10px;color:var(--ink3)}
+.tl-line{width:1px;background:var(--b2);flex-shrink:0;position:relative;margin:0 4px}
+.tl-dot{width:10px;height:10px;border-radius:50%;border:2px solid;position:absolute;left:-5px;top:4px;background:var(--surface)}
+.tl-card{flex:1;background:var(--surface2);border:1px solid var(--b);border-radius:var(--r);padding:10px 12px;border-right:3px solid transparent;transition:all 0.15s}
+.tl-row:hover .tl-card{border-right-color:var(--accent)}
+.tl-patient{font-size:13px;font-weight:700;color:var(--ink)}
+.tl-reason{font-size:12px;color:var(--ink3);margin-top:2px}
+.tl-meta{display:flex;align-items:center;gap:8px;margin-top:6px}
+.tl-ava{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+.pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.pill-green{background:var(--green-s);color:#065F46}
+.pill-amber{background:var(--amber-s);color:#92400E}
+.pill-blue{background:var(--accent-s);color:#1E40AF}
+.pill-red{background:var(--red-s);color:#991B1B}
+.pill-gray{background:var(--surface3);color:var(--ink2)}
+
+/* MINI CALENDAR */
+.mini-cal{background:var(--surface);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden}
+.mc-head{padding:12px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
+.mc-title{font-size:13px;font-weight:700}
+.mc-nav{background:transparent;border:1px solid var(--b2);border-radius:6px;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:14px;transition:all 0.15s}
+.mc-nav:hover{background:var(--surface2);color:var(--ink)}
+.mc-body{padding:10px 12px}
+.mc-days-hdr{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
+.mc-dh{text-align:center;font-size:10px;font-weight:600;color:var(--ink3);padding:2px 0}
+.mc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.mc-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:12px;border-radius:6px;cursor:pointer;position:relative;transition:all 0.15s;color:var(--ink2)}
+.mc-day:hover:not(.today):not(.sel){background:var(--surface2)}
+.mc-day.other{color:var(--ink4)}
+.mc-day.today{background:var(--accent);color:#fff;font-weight:700}
+.mc-day.sel:not(.today){background:var(--accent-s);color:var(--accent);font-weight:700}
+.mc-day.has::after{content:'';position:absolute;bottom:3px;width:4px;height:4px;background:currentColor;border-radius:50%;opacity:0.5}
+.mc-day.today.has::after{background:#fff;opacity:0.8}
+
+/* WAITING WIDGET */
+.wait-card{background:var(--surface);border:1px solid var(--b);border-radius:var(--rl);padding:14px;margin-top:12px}
+.wait-head{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.wait-count{background:var(--red-s);color:var(--red);font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+.wait-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--b)}
+.wait-row:last-child{border-bottom:none}
+.wait-ava{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.wait-name{font-size:12px;font-weight:600}
+.wait-since{font-size:11px;color:var(--ink3)}
+.call-btn{background:var(--green-s);color:#065F46;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;margin-right:0}
+.call-btn:hover{background:var(--green-t)}
+
+/* ═══════════════════ BOOKING ═══════════════════ */
+.book-shell{display:grid;grid-template-columns:1fr 340px;gap:0;min-height:600px}
+.book-left{padding:24px;border-right:1px solid var(--b)}
+.book-right{background:var(--surface);padding:20px}
+
+.step-track{display:flex;align-items:center;gap:0;margin-bottom:24px}
+.step-item{display:flex;align-items:center;flex:1;position:relative}
+.step-item:last-child{flex:0}
+.step-circle{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;border:2px solid var(--b2);background:var(--surface);color:var(--ink3);transition:all 0.25s;z-index:1}
+.step-item.done .step-circle{background:var(--green);border-color:var(--green);color:#fff}
+.step-item.act .step-circle{background:var(--accent);border-color:var(--accent);color:#fff}
+.step-line{flex:1;height:2px;background:var(--b);margin:0 -1px;transition:background 0.25s}
+.step-item.done+.step-item .step-line,.step-item.done .step-line{background:var(--green)}
+.step-lbl{font-size:11px;font-weight:600;margin-top:5px;color:var(--ink3);position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap}
+.step-item.act .step-lbl,.step-item.done .step-lbl{color:var(--ink2)}
+
+.bsect{margin-bottom:20px}
+.bsect-title{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px}
+.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.input-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:12px;font-weight:600;color:var(--ink2)}
+.fld label span{color:var(--red)}
+.fld input,.fld select,.fld textarea{border:1px solid var(--b2);border-radius:var(--r);padding:8px 11px;font-family:'Inter',sans-serif;font-size:13px;background:var(--surface);color:var(--ink);outline:none;transition:all 0.15s}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--accent-t);box-shadow:0 0 0 3px rgba(37,99,235,0.08)}
+.fld textarea{resize:vertical;min-height:72px;line-height:1.5}
+.fld.full{grid-column:1/-1}
+
+/* TIME SLOTS */
+.doctor-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.doc-card{background:var(--surface);border:1.5px solid var(--b2);border-radius:var(--r);padding:10px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:8px}
+.doc-card:hover{border-color:var(--accent-t)}
+.doc-card.on{border-color:var(--accent);background:var(--accent-s)}
+.doc-card-ava{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.doc-card-name{font-size:12px;font-weight:700}
+.doc-card-spec{font-size:11px;color:var(--ink3)}
+.doc-card.on .doc-card-spec{color:var(--accent);opacity:0.8}
+
+.slots-wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.slot{background:var(--surface);border:1px solid var(--b2);border-radius:var(--r);padding:7px 4px;text-align:center;cursor:pointer;transition:all 0.15s;font-size:12px;font-weight:600;color:var(--ink2)}
+.slot:hover:not(.full){border-color:var(--accent-t);background:var(--accent-s);color:var(--accent)}
+.slot.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.slot.full{opacity:0.35;cursor:not-allowed;text-decoration:line-through;font-size:11px}
+
+/* SUMMARY PANEL */
+.sum-title{font-size:14px;font-weight:800;margin-bottom:16px;letter-spacing:-0.3px}
+.sum-block{background:var(--surface2);border:1px solid var(--b);border-radius:var(--r);padding:12px;margin-bottom:10px}
+.sum-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--b);font-size:12px}
+.sum-row:last-child{border-bottom:none}
+.sum-row span:first-child{color:var(--ink3)}
+.sum-row span:last-child{font-weight:600;color:var(--ink)}
+.sum-doctor{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--b);border-radius:var(--r);padding:10px;margin-bottom:10px}
+.sum-doc-ava{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;background:var(--accent-s);color:var(--accent)}
+.confirm-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:12px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background 0.15s;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:12px}
+.confirm-btn:hover{background:var(--accent2)}
+.remind-opts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.remind-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--b);border-radius:var(--r);padding:8px 10px}
+.remind-left{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600}
+.toggle2{width:36px;height:20px;background:var(--ink4);border-radius:10px;border:none;cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0}
+.toggle2.on{background:var(--accent)}
+.toggle2::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform 0.2s}
+.toggle2.on::after{transform:translateX(16px)}
+
+/* ═══════════════════ PATIENTS ═══════════════════ */
+.pt-shell{padding:0 24px 24px}
+.pt-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.search-field{position:relative;flex:1}
+.search-field input{width:100%;background:var(--surface);border:1px solid var(--b2);border-radius:var(--r);padding:8px 12px 8px 34px;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:all 0.15s}
+.search-field input:focus{border-color:var(--accent-t);box-shadow:0 0 0 3px rgba(37,99,235,0.08)}
+.search-field i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink3);font-size:15px;pointer-events:none}
+.filter-btn{background:var(--surface);border:1px solid var(--b2);border-radius:var(--r);padding:8px 12px;font-size:13px;font-family:'Inter',sans-serif;color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all 0.15s}
+.filter-btn:hover{background:var(--surface2)}
+
+.pt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.pt-card{background:var(--surface);border:1px solid var(--b);border-radius:var(--rl);padding:16px;cursor:pointer;transition:all 0.18s;position:relative;overflow:hidden}
+.pt-card:hover{border-color:var(--b2);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.06)}
+.pt-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--rl) var(--rl) 0 0}
+.pt-ava{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;margin-bottom:10px}
+.pt-name{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.pt-id{font-size:11px;color:var(--ink3);margin-bottom:8px;font-family:'Inter',monospace}
+.pt-info-row{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3);margin-bottom:4px}
+.pt-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.pt-tag{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600}
+.pt-actions{display:flex;gap:6px;margin-top:10px}
+.pt-act{flex:1;background:var(--surface2);border:1px solid var(--b);border-radius:6px;padding:6px 8px;cursor:pointer;font-size:11px;font-weight:600;color:var(--ink2);transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:4px}
+.pt-act:hover{background:var(--surface3);color:var(--ink)}
+.pt-act.primary{background:var(--accent-s);border-color:var(--accent-t);color:var(--accent)}
+.pt-act.primary:hover{background:var(--accent-t)}
+
+/* PATIENT DETAIL */
+.ptd-shell{padding:0 24px 24px}
+.ptd-hero{background:var(--surface);border:1px solid var(--b);border-radius:var(--rl);padding:20px;margin-bottom:16px;display:flex;align-items:flex-start;gap:16px}
+.ptd-ava{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;flex-shrink:0}
+.ptd-main{flex:1}
+.ptd-name{font-size:20px;font-weight:800;letter-spacing:-0.4px;margin-bottom:4px}
+.ptd-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.ptd-tags{display:flex;flex-wrap:wrap;gap:5px}
+.ptd-actions{display:flex;gap:8px;margin-top:14px}
+.vital-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
+.vital{background:var(--surface);border:1px solid var(--b);border-radius:var(--r);padding:12px;text-align:center}
+.vital-val{font-size:18px;font-weight:800;letter-spacing:-0.5px;color:var(--ink)}
+.vital-unit{font-size:10px;color:var(--ink3);font-weight:400}
+.vital-lbl{font-size:11px;color:var(--ink3);margin-top:4px}
+.vital-status{width:6px;height:6px;border-radius:50%;margin:4px auto 0}
+
+.ptd-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.info-box{background:var(--surface);border:1px solid var(--b);border-radius:var(--rl);padding:14px}
+.ib-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink3);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:6px}
+.ib-title i{font-size:14px;color:var(--accent)}
+.ib-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--b);font-size:12px}
+.ib-row:last-child{border-bottom:none}
+.ib-row span:first-child{color:var(--ink3)}
+.ib-row span:last-child{font-weight:600;color:var(--ink)}
+
+.hist-box{background:var(--surface);border:1px solid var(--b);border-radius:var(--rl);padding:14px;margin-bottom:14px}
+.hist-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink3);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--b)}
+.hist-item{display:flex;gap:12px;margin-bottom:14px;position:relative}
+.hist-item::before{content:'';position:absolute;left:15px;top:24px;bottom:-8px;width:1px;background:var(--b)}
+.hist-item:last-child::before{display:none}
+.hist-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;z-index:1}
+.hist-body{flex:1;background:var(--surface2);border:1px solid var(--b);border-radius:var(--r);padding:10px 12px}
+.hist-date{font-size:10px;color:var(--ink3);margin-bottom:3px}
+.hist-title2{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.hist-text{font-size:12px;color:var(--ink2);line-height:1.5}
+.hist-rx{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.rx-pill{background:var(--accent-s);color:#1E40AF;font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;border:1px solid var(--accent-t)}
+
+/* ═══════════════════ REMINDERS ═══════════════════ */
+.rem-shell{padding:0 24px 24px}
+.rem-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.rem-stat{background:var(--surface);border:1px solid var(--b);border-radius:var(--rl);padding:14px;display:flex;align-items:center;gap:12px}
+.rem-stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.rem-stat-val{font-size:22px;font-weight:800;letter-spacing:-0.5px}
+.rem-stat-lbl{font-size:11px;color:var(--ink3);margin-top:1px}
+
+.rem-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rem-card{background:var(--surface);border:1px solid var(--b);border-radius:var(--rl);padding:16px}
+.rem-card-title{font-size:13px;font-weight:700;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
+.channel-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--b)}
+.channel-row:last-child{border-bottom:none}
+.ch-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.ch-info{flex:1}
+.ch-name{font-size:12px;font-weight:700}
+.ch-desc{font-size:11px;color:var(--ink3)}
+.ch-stats{font-size:11px;font-weight:600;color:var(--green)}
+.tgl{width:38px;height:22px;background:var(--ink4);border-radius:11px;border:none;cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0}
+.tgl.on{background:var(--accent)}
+.tgl::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform 0.2s}
+.tgl.on::after{transform:translateX(16px)}
+
+.sched-rows{display:flex;flex-direction:column;gap:0}
+.sched-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--b)}
+.sched-row:last-child{border-bottom:none}
+.sched-time{background:var(--accent-s);color:#1E40AF;font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px;min-width:52px;text-align:center;flex-shrink:0}
+.sched-name{font-size:13px;font-weight:600;flex:1}
+.sched-channel{font-size:11px;color:var(--ink3)}
+.sched-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px}
+
+/* TOAST */
+.toast-wrap{position:relative;height:0;overflow:visible}
+.toast{position:absolute;bottom:20px;right:20px;background:#0F172A;color:#fff;padding:12px 16px;border-radius:10px;font-size:12px;font-weight:500;display:flex;align-items:center;gap:8px;z-index:999;opacity:0;transform:translateY(8px);transition:all 0.3s;pointer-events:none;min-width:240px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast-icon{width:20px;height:20px;border-radius:50%;background:#10B981;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+</style>
+
+<h2 class="sr-only">MediBook Pro — نظام إدارة عيادة متكامل</h2>
+
+<div class="shell">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo-mark">
+      <svg viewBox="0 0 18 18"><path d="M9 2v14M2 9h14" stroke-width="2.5"/><circle cx="9" cy="9" r="7" stroke-width="1.5"/></svg>
+    </div>
+    <span class="logo-text">Medi<span>Book</span></span>
+    <div class="topbar-center">
+      <i class="fas fa-magnifying-glass search-icon" aria-hidden="true"></i>
+      <input class="top-search" type="text" placeholder="Search patients, appointments..." />
+    </div>
+    <div class="topbar-right">
+      <button class="tb-btn" aria-label="notifications"><i class="fas fa-bell" aria-hidden="true"></i><div class="tb-notif"></div></button>
+      <button class="tb-btn" aria-label="messages"><i class="fas fa-comment" aria-hidden="true"></i></button>
+      <button class="tb-btn" aria-label="settings"><i class="fas fa-gear" aria-hidden="true"></i></button>
+      <div class="doctor-chip">
+        <div class="doc-avatar">DA</div>
+        <div><div class="doc-name">Dr. Ahmed</div><div class="doc-role">General Medicine</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ICON NAV -->
+  <nav class="icon-nav" role="navigation" aria-label="main navigation">
+    <div class="nav-item on" onclick="goView('dashboard')" title="Dashboard"><i class="fas fa-chart-line" aria-hidden="true"></i></div>
+    <div class="nav-item" onclick="goView('booking')" title="Book Appointment"><i class="fas fa-calendar-plus" aria-hidden="true"></i></div>
+    <div class="nav-item" onclick="goView('patients')" title="Patients"><i class="fas fa-users" aria-hidden="true"></i></div>
+    <div class="nav-item" onclick="goView('reminders')" title="Reminders"><i class="fas fa-bell" aria-hidden="true"></i><div class="n-dot"></div></div>
+    <div class="nav-sep"></div>
+    <div class="nav-item" onclick="goView('reports')" title="Reports"><i class="fas fa-chart-bar" aria-hidden="true"></i></div>
+    <div class="nav-item" onclick="goView('billing')" title="Billing"><i class="fas fa-receipt" aria-hidden="true"></i></div>
+    <div class="nav-item" onclick="goView('prescriptions')" title="Prescriptions"><i class="fas fa-pills" aria-hidden="true"></i></div>
+    <div class="nav-sep"></div>
+    <div class="nav-item nav-bot" onclick="goView('settings')" title="Settings"><i class="fas fa-gear" aria-hidden="true"></i></div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="view on" id="view-dashboard">
+      <div class="ph">
+        <div><div class="ph-title">Good morning, Dr. Ahmed 👋</div><div class="ph-sub">Sunday, May 24 · 8 appointments today · 3 waiting</div></div>
+        <div class="ph-actions">
+          <button class="btn-ghost"><i class="fas fa-download" aria-hidden="true" style="font-size:15px"></i> Export</button>
+          <button class="btn-primary" onclick="goView('booking')"><i class="fas fa-plus" aria-hidden="true" style="font-size:15px"></i> New Appointment</button>
+        </div>
+      </div>
+      <div class="dash-body">
+        <div class="kpi-row">
+          <div class="kpi"><div class="kpi-top"><div class="kpi-icon" style="background:#EFF6FF;color:#2563EB"><i class="fas fa-calendar-check" aria-hidden="true"></i></div><span class="kpi-badge pill-blue">Today</span></div><div class="kpi-val">8</div><div class="kpi-lbl">Appointments</div><div class="kpi-bar"><div class="kpi-fill" style="width:67%;background:#2563EB"></div></div></div>
+          <div class="kpi"><div class="kpi-top"><div class="kpi-icon" style="background:#ECFDF5;color:#059669"><i class="fas fa-users" aria-hidden="true"></i></div><span class="kpi-badge pill-green">+5 new</span></div><div class="kpi-val">142</div><div class="kpi-lbl">Total Patients</div><div class="kpi-bar"><div class="kpi-fill" style="width:82%;background:#059669"></div></div></div>
+          <div class="kpi"><div class="kpi-top"><div class="kpi-icon" style="background:#FFFBEB;color:#D97706"><i class="fas fa-clock" aria-hidden="true"></i></div><span class="kpi-badge pill-amber">↓ 4min</span></div><div class="kpi-val">18<span style="font-size:14px;font-weight:500">m</span></div><div class="kpi-lbl">Avg Wait Time</div><div class="kpi-bar"><div class="kpi-fill" style="width:35%;background:#D97706"></div></div></div>
+          <div class="kpi"><div class="kpi-top"><div class="kpi-icon" style="background:#F5F3FF;color:#7C3AED"><i class="fas fa-chart-line" aria-hidden="true"></i></div><span class="kpi-badge" style="background:#F5F3FF;color:#6D28D9">↑ 2%</span></div><div class="kpi-val">94<span style="font-size:14px;font-weight:500">%</span></div><div class="kpi-lbl">Show Rate</div><div class="kpi-bar"><div class="kpi-fill" style="width:94%;background:#7C3AED"></div></div></div>
+        </div>
+
+        <div class="dash-grid">
+          <div class="sched-card">
+            <div class="sched-head">
+              <span class="sched-head-title">Today's Schedule</span>
+              <div class="day-tabs">
+                <div class="day-tab" onclick="switchDay(this,'Yesterday')">Yesterday</div>
+                <div class="day-tab on" onclick="switchDay(this,'Today')">Today</div>
+                <div class="day-tab" onclick="switchDay(this,'Tomorrow')">Tomorrow</div>
+              </div>
+            </div>
+            <div class="timeline-wrap" id="timeline-wrap"></div>
+          </div>
+
+          <div>
+            <div class="mini-cal">
+              <div class="mc-head">
+                <button class="mc-nav" onclick="mcNav(-1)"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+                <span class="mc-title" id="mc-title">May 2026</span>
+                <button class="mc-nav" onclick="mcNav(1)"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+              </div>
+              <div class="mc-body">
+                <div class="mc-days-hdr" id="mc-hdr"></div>
+                <div class="mc-grid" id="mc-grid"></div>
+              </div>
+            </div>
+            <div class="wait-card">
+              <div class="wait-head">Waiting Room <span class="wait-count" id="wait-badge">3 patients</span></div>
+              <div id="waiting-room"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BOOKING ── -->
+    <div class="view" id="view-booking">
+      <div class="ph">
+        <div><div class="ph-title">Book Appointment</div><div class="ph-sub">Fill in the details and select an available slot</div></div>
+        <button class="btn-ghost" onclick="goView('dashboard')"><i class="fas fa-arrow-right" aria-hidden="true" style="font-size:15px"></i> Back</button>
+      </div>
+      <div class="book-shell">
+        <div class="book-left">
+          <div class="step-track" id="step-track"></div>
+          <div id="bstep1">
+            <div class="bsect"><div class="bsect-title">Patient Information</div>
+              <div class="input-grid">
+                <div class="fld"><label>First Name <span>*</span></label><input type="text" placeholder="Mohamed" /></div>
+                <div class="fld"><label>Last Name <span>*</span></label><input type="text" placeholder="Al-Sayed" /></div>
+                <div class="fld"><label>Phone <span>*</span></label><input type="tel" placeholder="+20 1xx xxx xxxx" /></div>
+                <div class="fld"><label>Date of Birth</label><input type="date" value="1988-06-15" /></div>
+                <div class="fld"><label>Gender</label><select><option>Male</option><option>Female</option></select></div>
+                <div class="fld"><label>Blood Type</label><select><option>—</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></div>
+                <div class="fld full"><label>Email Address</label><input type="email" placeholder="patient@email.com" /></div>
+              </div>
+            </div>
+            <div class="bsect"><div class="bsect-title">Visit Details</div>
+              <div class="input-grid">
+                <div class="fld"><label>Specialty <span>*</span></label><select><option>General Medicine</option><option>Cardiology</option><option>Pediatrics</option><option>Dermatology</option><option>Orthopedics</option></select></div>
+                <div class="fld"><label>Visit Type</label><select><option>Consultation</option><option>Follow-up</option><option>Emergency</option><option>Checkup</option></select></div>
+                <div class="fld full"><label>Chief Complaint <span>*</span></label><textarea placeholder="Describe the main reason for the visit in detail..."></textarea></div>
+                <div class="fld"><label>Priority</label><select><option>Normal</option><option>Medium</option><option>Urgent</option></select></div>
+                <div class="fld"><label>Insurance</label><select><option>None</option><option>Allianz</option><option>AXA</option><option>Metlife</option></select></div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:10px">
+              <button class="btn-ghost" onclick="goView('dashboard')">Cancel</button>
+              <button class="btn-primary" onclick="bNext(2)">Next — Select Slot <i class="fas fa-arrow-left" aria-hidden="true" style="font-size:14px"></i></button>
+            </div>
+          </div>
+          <div id="bstep2" style="display:none">
+            <div class="bsect"><div class="bsect-title">Select Doctor</div>
+              <div class="doctor-cards" id="doctor-cards"></div>
+            </div>
+            <div class="bsect">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div class="bsect-title" style="margin-bottom:0">Available Slots — <span id="slot-date">Mon 25 May</span></div>
+                <input type="date" value="2026-05-25" class="fld" style="border:1px solid var(--b2);border-radius:var(--r);padding:5px 10px;font-family:'Inter',sans-serif;font-size:12px;outline:none" />
+              </div>
+              <div class="slots-wrap" id="slots-wrap"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;gap:10px">
+              <button class="btn-ghost" onclick="bNext(1)"><i class="fas fa-arrow-right" aria-hidden="true" style="font-size:14px"></i> Back</button>
+              <button class="btn-primary" onclick="bNext(3)">Review & Confirm <i class="fas fa-arrow-left" aria-hidden="true" style="font-size:14px"></i></button>
+            </div>
+          </div>
+          <div id="bstep3" style="display:none">
+            <div class="bsect"><div class="bsect-title">Reminder Preferences</div>
+              <div class="remind-opts" id="remind-opts"></div>
+            </div>
+            <div class="bsect"><div class="bsect-title">Reminder Timing</div>
+              <div class="input-grid">
+                <div class="fld"><label>Send reminder</label><select><option>1 hour before</option><option>2 hours before</option><option>1 day before</option><option>2 days before</option></select></div>
+                <div class="fld"><label>Follow-up reminder</label><select><option>3 days after</option><option>1 week after</option><option>2 weeks after</option></select></div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;gap:10px">
+              <button class="btn-ghost" onclick="bNext(2)"><i class="fas fa-arrow-right" aria-hidden="true" style="font-size:14px"></i> Back</button>
+              <button class="btn-primary" onclick="doConfirm()"><i class="fas fa-check" aria-hidden="true" style="font-size:14px"></i> Confirm Booking</button>
+            </div>
+          </div>
+        </div>
+        <div class="book-right">
+          <div class="sum-title">Appointment Summary</div>
+          <div class="sum-doctor">
+            <div class="sum-doc-ava">AS</div>
+            <div><div style="font-size:13px;font-weight:700">Dr. Ahmed Salem</div><div style="font-size:11px;color:var(--ink3)">General Medicine</div><div style="display:flex;gap:2px;margin-top:3px;color:#F59E0B;font-size:12px">★★★★★ <span style="font-size:11px;color:var(--ink3);margin-right:3px">(214)</span></div></div>
+          </div>
+          <div class="sum-block">
+            <div class="sum-row"><span>Patient</span><span>Mohamed Al-Sayed</span></div>
+            <div class="sum-row"><span>Date</span><span>Mon, May 25 2026</span></div>
+            <div class="sum-row"><span>Time</span><span>10:00 AM</span></div>
+            <div class="sum-row"><span>Type</span><span>Consultation</span></div>
+            <div class="sum-row"><span>Priority</span><span><span class="pill pill-blue">Normal</span></span></div>
+          </div>
+          <div class="sum-block">
+            <div class="sum-row"><span>Consultation fee</span><span>EGP 300</span></div>
+            <div class="sum-row"><span>Insurance</span><span>None</span></div>
+            <div class="sum-row" style="font-weight:700"><span style="color:var(--ink);font-weight:700">Total</span><span style="color:var(--accent)">EGP 300</span></div>
+          </div>
+          <div style="background:#EFF6FF;border:1px solid var(--accent-t);border-radius:var(--r);padding:10px 12px;font-size:12px;color:#1E40AF;display:flex;align-items:flex-start;gap:7px">
+            <i class="fas fa-circle-info" aria-hidden="true" style="font-size:16px;flex-shrink:0;margin-top:1px"></i>
+            A confirmation SMS + WhatsApp will be sent to the patient immediately after booking.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PATIENTS ── -->
+    <div class="view" id="view-patients">
+      <div class="ph">
+        <div><div class="ph-title">Patient Records</div><div class="ph-sub" id="pt-count-lbl">142 patients registered</div></div>
+        <div class="ph-actions">
+          <button class="btn-ghost"><i class="fas fa-download" aria-hidden="true" style="font-size:15px"></i> Export</button>
+          <button class="btn-primary"><i class="fas fa-plus" aria-hidden="true" style="font-size:15px"></i> Add Patient</button>
+        </div>
+      </div>
+      <div class="pt-shell">
+        <div class="pt-bar">
+          <div class="search-field"><i class="fas fa-magnifying-glass" aria-hidden="true"></i><input type="text" placeholder="Search by name, ID, phone..." oninput="filterPts(this.value)" /></div>
+          <select class="filter-btn" style="gap:0;padding:8px 12px"><option>All Patients</option><option>Regular</option><option>New</option><option>Chronic</option></select>
+          <button class="filter-btn"><i class="fas fa-sliders" aria-hidden="true" style="font-size:15px"></i> Filters</button>
+          <button class="filter-btn"><i class="ti ti-layout-grid" aria-hidden="true" style="font-size:15px"></i></button>
+        </div>
+        <div class="pt-grid" id="pt-grid"></div>
+      </div>
+    </div>
+
+    <!-- ── PATIENT DETAIL ── -->
+    <div class="view" id="view-ptdetail">
+      <div class="ph">
+        <div><div class="ph-title" id="ptd-title">Patient Profile</div><div class="ph-sub">Last visit 3 days ago</div></div>
+        <div class="ph-actions">
+          <button class="btn-ghost" onclick="goView('patients')"><i class="fas fa-arrow-right" aria-hidden="true" style="font-size:14px"></i> Back</button>
+          <button class="btn-ghost"><i class="fas fa-pen" aria-hidden="true" style="font-size:14px"></i> Edit</button>
+          <button class="btn-primary" onclick="goView('booking')"><i class="fas fa-calendar-plus" aria-hidden="true" style="font-size:14px"></i> New Appointment</button>
+        </div>
+      </div>
+      <div class="ptd-shell" id="ptd-body"></div>
+    </div>
+
+    <!-- ── REMINDERS ── -->
+    <div class="view" id="view-reminders">
+      <div class="ph">
+        <div><div class="ph-title">Reminders & Notifications</div><div class="ph-sub">Automated patient communication system</div></div>
+        <button class="btn-primary"><i class="fas fa-plus" aria-hidden="true" style="font-size:14px"></i> Create Reminder</button>
+      </div>
+      <div class="rem-shell">
+        <div class="rem-stats">
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#EFF6FF;color:#2563EB"><i class="fas fa-paper-plane" aria-hidden="true"></i></div><div><div class="rem-stat-val">47</div><div class="rem-stat-lbl">Sent today</div></div></div>
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#ECFDF5;color:#059669"><i class="fas fa-check" aria-hidden="true"></i></div><div><div class="rem-stat-val">92%</div><div class="rem-stat-lbl">Delivered</div></div></div>
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#FFFBEB;color:#D97706"><i class="fas fa-clock" aria-hidden="true"></i></div><div><div class="rem-stat-val">8</div><div class="rem-stat-lbl">Scheduled</div></div></div>
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#F5F3FF;color:#7C3AED"><i class="fas fa-bar-chart" aria-hidden="true"></i></div><div><div class="rem-stat-val">+18%</div><div class="rem-stat-lbl">Open rate</div></div></div>
+        </div>
+        <div class="rem-grid">
+          <div class="rem-card">
+            <div class="rem-card-title">Notification Channels <span style="font-size:11px;color:var(--ink3);font-weight:400">3 active</span></div>
+            <div id="channels"></div>
+          </div>
+          <div class="rem-card">
+            <div class="rem-card-title">Today's Queue</div>
+            <div id="rem-queue"></div>
+          </div>
+          <div class="rem-card" style="grid-column:1/-1">
+            <div class="rem-card-title">Automation Rules</div>
+            <div id="auto-rules"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── REPORTS ── -->
+    <div class="view" id="view-reports">
+      <div class="ph">
+        <div><div class="ph-title">Medical Reports</div><div class="ph-sub">Patient reports and medical documents</div></div>
+        <button class="btn-primary"><i class="fas fa-plus" aria-hidden="true" style="font-size:14px"></i> New Report</button>
+      </div>
+      <div class="rem-shell">
+        <div class="rem-stats">
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#EFF6FF;color:#2563EB"><i class="fas fa-file-medical" aria-hidden="true"></i></div><div><div class="rem-stat-val">48</div><div class="rem-stat-lbl">Reports This Month</div></div></div>
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#ECFDF5;color:#059669"><i class="fas fa-file-check" aria-hidden="true"></i></div><div><div class="rem-stat-val">142</div><div class="rem-stat-lbl">Total Reports</div></div></div>
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#FFFBEB;color:#D97706"><i class="fas fa-hourglass" aria-hidden="true"></i></div><div><div class="rem-stat-val">5</div><div class="rem-stat-lbl">Pending Reviews</div></div></div>
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#F5F3FF;color:#7C3AED"><i class="fas fa-chart-bar" aria-hidden="true"></i></div><div><div class="rem-stat-val">94%</div><div class="rem-stat-lbl">Completion Rate</div></div></div>
+        </div>
+        <div class="rem-grid" style="grid-template-columns:1fr">
+          <div class="rem-card"><div class="rem-card-title">Recent Reports</div>
+            <div class="sched-rows">
+              <div class="sched-row"><div style="flex:1"><div class="sched-name">Sarah Mahmoud - Lab Results</div><div class="sched-channel">Blood test · Created 2 days ago</div></div><div class="sched-status pill-green">Complete</div></div>
+              <div class="sched-row"><div style="flex:1"><div class="sched-name">Ahmed Ali - X-Ray Report</div><div class="sched-channel">Chest X-Ray · Created yesterday</div></div><div class="sched-status pill-green">Complete</div></div>
+              <div class="sched-row"><div style="flex:1"><div class="sched-name">Mona Reda - Medical History</div><div class="sched-channel">Annual checkup · Created today</div></div><div class="sched-status pill-amber">Pending</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BILLING ── -->
+    <div class="view" id="view-billing">
+      <div class="ph">
+        <div><div class="ph-title">Billing & Payments</div><div class="ph-sub">Manage invoices and payment history</div></div>
+        <button class="btn-primary"><i class="fas fa-plus" aria-hidden="true" style="font-size:14px"></i> New Invoice</button>
+      </div>
+      <div class="rem-shell">
+        <div class="rem-stats">
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#EFF6FF;color:#2563EB"><i class="fas fa-dollar-sign" aria-hidden="true"></i></div><div><div class="rem-stat-val">28,500</div><div class="rem-stat-lbl">Total Revenue</div></div></div>
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#ECFDF5;color:#059669"><i class="fas fa-check-circle" aria-hidden="true"></i></div><div><div class="rem-stat-val">142</div><div class="rem-stat-lbl">Paid Invoices</div></div></div>
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#FFFBEB;color:#D97706"><i class="fas fa-clock" aria-hidden="true"></i></div><div><div class="rem-stat-val">8</div><div class="rem-stat-lbl">Pending Payments</div></div></div>
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#F5F3FF;color:#7C3AED"><i class="fas fa-percentage" aria-hidden="true"></i></div><div><div class="rem-stat-val">94.6%</div><div class="rem-stat-lbl">Collection Rate</div></div></div>
+        </div>
+        <div class="rem-grid" style="grid-template-columns:1fr">
+          <div class="rem-card"><div class="rem-card-title">Recent Transactions</div>
+            <div class="sched-rows">
+              <div class="sched-row"><div style="flex:1"><div class="sched-name">Invoice #INV-2026-001</div><div class="sched-channel">Sarah Mahmoud · 300 EGP</div></div><div class="sched-status pill-green">Paid</div></div>
+              <div class="sched-row"><div style="flex:1"><div class="sched-name">Invoice #INV-2026-002</div><div class="sched-channel">Ahmed Ali · 250 EGP</div></div><div class="sched-status pill-amber">Pending</div></div>
+              <div class="sched-row"><div style="flex:1"><div class="sched-name">Invoice #INV-2026-003</div><div class="sched-channel">Mona Reda · 350 EGP</div></div><div class="sched-status pill-green">Paid</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PRESCRIPTIONS ── -->
+    <div class="view" id="view-prescriptions">
+      <div class="ph">
+        <div><div class="ph-title">Prescriptions</div><div class="ph-sub">Manage and track patient prescriptions</div></div>
+        <button class="btn-primary"><i class="fas fa-plus" aria-hidden="true" style="font-size:14px"></i> New Prescription</button>
+      </div>
+      <div class="rem-shell">
+        <div class="rem-stats">
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#EFF6FF;color:#2563EB"><i class="fas fa-pills" aria-hidden="true"></i></div><div><div class="rem-stat-val">76</div><div class="rem-stat-lbl">Prescriptions Today</div></div></div>
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#ECFDF5;color:#059669"><i class="fas fa-check-circle" aria-hidden="true"></i></div><div><div class="rem-stat-val">1,240</div><div class="rem-stat-lbl">Total Issued</div></div></div>
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#FFFBEB;color:#D97706"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i></div><div><div class="rem-stat-val">3</div><div class="rem-stat-lbl">Drug Interactions</div></div></div>
+          <div class="rem-stat"><div class="rem-stat-icon" style="background:#F5F3FF;color:#7C3AED"><i class="fas fa-sync" aria-hidden="true"></i></div><div><div class="rem-stat-val">12</div><div class="rem-stat-lbl">Refills Due</div></div></div>
+        </div>
+        <div class="rem-grid" style="grid-template-columns:1fr">
+          <div class="rem-card"><div class="rem-card-title">Recent Prescriptions</div>
+            <div class="sched-rows">
+              <div class="sched-row"><div style="flex:1"><div class="sched-name">Amoxicillin 500mg - Sarah</div><div class="sched-channel">Issued today · 5 days supply</div></div><div class="sched-status pill-green">Active</div></div>
+              <div class="sched-row"><div style="flex:1"><div class="sched-name">Aspirin 81mg - Ahmed</div><div class="sched-channel">Issued yesterday · 30 days</div></div><div class="sched-status pill-green">Active</div></div>
+              <div class="sched-row"><div style="flex:1"><div class="sched-name">Insulin - Youssef</div><div class="sched-channel">Issued 2 days ago · Refill due</div></div><div class="sched-status pill-amber">Refill Due</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="view" id="view-settings">
+      <div class="ph">
+        <div><div class="ph-title">Settings</div><div class="ph-sub">Configure your clinic preferences</div></div>
+      </div>
+      <div class="rem-shell">
+        <div class="rem-grid" style="grid-template-columns:1fr">
+          <div class="rem-card"><div class="rem-card-title">Clinic Information</div>
+            <div class="sched-rows">
+              <div style="padding:10px 0"><div style="font-weight:600;margin-bottom:5px">Clinic Name</div><input type="text" value="Central Medical Clinic" style="width:100%;border:1px solid var(--b);padding:8px;border-radius:6px"></div>
+              <div style="padding:10px 0"><div style="font-weight:600;margin-bottom:5px">Phone Number</div><input type="text" value="+20 100 123 4567" style="width:100%;border:1px solid var(--b);padding:8px;border-radius:6px"></div>
+              <div style="padding:10px 0"><div style="font-weight:600;margin-bottom:5px">Email</div><input type="email" value="info@clinic.com" style="width:100%;border:1px solid var(--b);padding:8px;border-radius:6px"></div>
+            </div>
+          </div>
+          <div class="rem-card"><div class="rem-card-title">Working Hours</div>
+            <div class="sched-rows">
+              <div class="sched-row"><div style="flex:1"><div class="sched-name">Saturday - Thursday</div><div class="sched-channel">10:00 AM - 8:00 PM</div></div></div>
+              <div class="sched-row"><div style="flex:1"><div class="sched-name">Friday</div><div class="sched-channel">2:00 PM - 8:00 PM</div></div></div>
+              <div style="padding:10px 0"><button class="btn-primary" style="width:100%;justify-content:center"><i class="fas fa-save"></i> Save Changes</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast-wrap"><div class="toast" id="toast"><div class="toast-icon"><i class="fas fa-check" aria-hidden="true" style="color:#fff;font-size:12px"></i></div><span id="toast-msg"></span></div></div>
+
+<script>
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+const appts = [
+  {t:'09:00',a:'AM',n:'Sarah Mahmoud',r:'Hypertension follow-up',s:'done',c:'#7C3AED',bg:'#F5F3FF'},
+  {t:'09:30',a:'AM',n:'Youssef Hassan',r:'Diabetes checkup',s:'done',c:'#2563EB',bg:'#EFF6FF'},
+  {t:'10:00',a:'AM',n:'Mona Reda',r:'Joint pain — arthritis',s:'waiting',c:'#059669',bg:'#ECFDF5'},
+  {t:'10:30',a:'AM',n:'Ahmed Ali',r:'First visit — fever',s:'waiting',c:'#D97706',bg:'#FFFBEB'},
+  {t:'11:00',a:'AM',n:'Noha Ibrahim',r:'Migraine headaches',s:'waiting',c:'#DC2626',bg:'#FEF2F2'},
+  {t:'11:30',a:'AM',n:'Karim Omar',r:'Back pain evaluation',s:'confirmed',c:'#059669',bg:'#ECFDF5'},
+  {t:'12:00',a:'PM',n:'Lamia Salem',r:'Tonsillitis',s:'confirmed',c:'#7C3AED',bg:'#F5F3FF'},
+  {t:'02:00',a:'PM',n:'Tarek Farouk',r:'Annual checkup',s:'confirmed',c:'#2563EB',bg:'#EFF6FF'},
+];
+const sMap = {done:'pill-gray',waiting:'pill-amber',confirmed:'pill-green',cancelled:'pill-red'};
+const sLabel = {done:'Done',waiting:'Waiting',confirmed:'Confirmed',cancelled:'Cancelled'};
+
+function renderTimeline(data){
+  const el = document.getElementById('timeline-wrap');
+  el.innerHTML = data.map(a=>`
+    <div class="tl-row">
+      <div class="tl-time"><div class="tl-time-main">${a.t}</div><div class="tl-time-ampm">${a.a}</div></div>
+      <div class="tl-line"><div class="tl-dot" style="border-color:${a.c}"></div></div>
+      <div class="tl-card">
+        <div class="tl-patient">${a.n}</div>
+        <div class="tl-reason">${a.r}</div>
+        <div class="tl-meta">
+          <div class="tl-ava" style="background:${a.bg};color:${a.c};width:22px;height:22px">${a.n.split(' ').map(x=>x[0]).join('').substring(0,2)}</div>
+          <span class="pill ${sMap[a.s]}">${sLabel[a.s]}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function switchDay(btn, day){
+  document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  const data = day==='Today'?appts:day==='Tomorrow'?appts.slice(0,4).map(a=>({...a,s:'confirmed'})):appts.slice(0,2).map(a=>({...a,s:'done'}));
+  renderTimeline(data);
+}
+
+const waitPatients = [
+  {n:'Mona Reda',since:'10 min',c:'#059669',bg:'#ECFDF5'},
+  {n:'Ahmed Ali',since:'22 min',c:'#D97706',bg:'#FFFBEB'},
+  {n:'Noha Ibrahim',since:'31 min',c:'#DC2626',bg:'#FEF2F2'},
+];
+function renderWaiting(){
+  document.getElementById('waiting-room').innerHTML = waitPatients.map(w=>`
+    <div class="wait-row">
+      <div class="wait-ava" style="background:${w.bg};color:${w.c}">${w.n.split(' ').map(x=>x[0]).join('')}</div>
+      <div style="flex:1"><div class="wait-name">${w.n}</div><div class="wait-since">Waiting ${w.since}</div></div>
+      <button class="call-btn" onclick="showToast('Calling ${w.n}...')">Call In</button>
+    </div>
+  `).join('');
+}
+
+let mcY=2026,mcM=4,selDay=24;
+const hasDays=[3,7,10,12,14,17,19,21,24,25,26,28];
+function renderMC(){
+  document.getElementById('mc-title').textContent=MONTHS[mcM]+' '+mcY;
+  const hdr=document.getElementById('mc-hdr');
+  hdr.innerHTML=DAYS.map(d=>`<div class="mc-dh">${d[0]}</div>`).join('');
+  const first=new Date(mcY,mcM,1).getDay();
+  const last=new Date(mcY,mcM+1,0).getDate();
+  let html='';
+  for(let i=0;i<first;i++) html+=`<div class="mc-day other">${new Date(mcY,mcM,0).getDate()-first+i+1}</div>`;
+  for(let d=1;d<=last;d++){
+    const today=d===24&&mcM===4&&mcY===2026;
+    const sel=d===selDay&&!today;
+    const has=hasDays.includes(d);
+    html+=`<div class="mc-day ${today?'today':''} ${sel?'sel':''} ${has?'has':''}" onclick="selMC(${d})">${d}</div>`;
+  }
+  document.getElementById('mc-grid').innerHTML=html;
+}
+function selMC(d){selDay=d;renderMC();}
+function mcNav(dir){mcM+=dir;if(mcM>11){mcM=0;mcY++;}if(mcM<0){mcM=11;mcY--;}renderMC();}
+
+const patients=[
+  {id:'P-0041',fn:'Sarah',ln:'Mahmoud',phone:'0101234567',dob:'1985-03-12',gender:'Female',blood:'A+',last:'May 20, 2026',diag:'Hypertension',type:'regular',visits:18,c:'#7C3AED',bg:'#F5F3FF'},
+  {id:'P-0042',fn:'Youssef',ln:'Hassan',phone:'0112345678',dob:'1978-08-24',gender:'Male',blood:'O+',last:'May 18, 2026',diag:'Type 2 Diabetes',type:'regular',visits:24,c:'#2563EB',bg:'#EFF6FF'},
+  {id:'P-0043',fn:'Mona',ln:'Reda',phone:'0123456789',dob:'1991-11-05',gender:'Female',blood:'B+',last:'May 15, 2026',diag:'Arthritis',type:'regular',visits:11,c:'#059669',bg:'#ECFDF5'},
+  {id:'P-0044',fn:'Ahmed',ln:'Ali',phone:'0134567890',dob:'2001-01-30',gender:'Male',blood:'AB+',last:'May 10, 2026',diag:'Acute fever',type:'new',visits:2,c:'#D97706',bg:'#FFFBEB'},
+  {id:'P-0045',fn:'Noha',ln:'Ibrahim',phone:'0145678901',dob:'1993-07-18',gender:'Female',blood:'O-',last:'May 8, 2026',diag:'Migraine',type:'regular',visits:9,c:'#DC2626',bg:'#FEF2F2'},
+  {id:'P-0046',fn:'Karim',ln:'Omar',phone:'0156789012',dob:'1988-04-02',gender:'Male',blood:'A-',last:'May 5, 2026',diag:'Lumbar pain',type:'new',visits:3,c:'#059669',bg:'#ECFDF5'},
+  {id:'P-0047',fn:'Lamia',ln:'Salem',phone:'0167890123',dob:'1996-09-14',gender:'Female',blood:'B-',last:'May 1, 2026',diag:'Tonsillitis',type:'regular',visits:7,c:'#7C3AED',bg:'#F5F3FF'},
+  {id:'P-0048',fn:'Tarek',ln:'Farouk',phone:'0178901234',dob:'1970-12-25',gender:'Male',blood:'O+',last:'Apr 28, 2026',diag:'Annual checkup',type:'regular',visits:31,c:'#2563EB',bg:'#EFF6FF'},
+];
+
+function renderPtGrid(list){
+  document.getElementById('pt-grid').innerHTML=list.map(p=>`
+    <div class="pt-card" style="--cc:${p.c}" onclick="viewPt('${p.id}')">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;background:${p.c}"></div>
+      <div class="pt-ava" style="background:${p.bg};color:${p.c}">${p.fn[0]+p.ln[0]}</div>
+      <div class="pt-name">${p.fn} ${p.ln}</div>
+      <div class="pt-id">${p.id}</div>
+      <div class="pt-info-row"><i class="fas fa-phone" aria-hidden="true" style="font-size:12px"></i>${p.phone}</div>
+      <div class="pt-info-row"><i class="fas fa-calendar aria-hidden="true" style="font-size:12px"></i>Last: ${p.last}</div>
+      <div class="pt-info-row"><i class="fas fa-stethoscope" aria-hidden="true" style="font-size:12px"></i>${p.diag}</div>
+      <div class="pt-tags">
+        <span class="pt-tag" style="background:${p.bg};color:${p.c};border:1px solid ${p.c}33">${p.type==='regular'?'Regular':'New'}</span>
+        <span class="pt-tag pill-gray">${p.visits} visits</span>
+        <span class="pt-tag" style="background:#EFF6FF;color:#1E40AF">${p.blood}</span>
+      </div>
+      <div class="pt-actions">
+        <button class="pt-act primary" onclick="event.stopPropagation();goView('booking')"><i class="fas fa-calendar-plus" aria-hidden="true" style="font-size:12px"></i></button>
+        <button class="pt-act" onclick="event.stopPropagation();viewPt('${p.id}')"><i class="fas fa-eye" aria-hidden="true" style="font-size:12px"></i> View</button>
+        <button class="pt-act" onclick="event.stopPropagation()"><i class="fas fa-pen" aria-hidden="true" style="font-size:12px"></i> Edit</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterPts(q){
+  const f=patients.filter(p=>`${p.fn} ${p.ln} ${p.phone} ${p.id}`.toLowerCase().includes(q.toLowerCase()));
+  renderPtGrid(f);
+  document.getElementById('pt-count-lbl').textContent=`${f.length} patients shown`;
+}
+
+function viewPt(id){
+  const p=patients.find(x=>x.id===id);
+  if(!p)return;
+  document.getElementById('ptd-title').textContent=p.fn+' '+p.ln;
+  document.getElementById('ptd-body').innerHTML=`
+    <div class="ptd-hero">
+      <div class="ptd-ava" style="background:${p.bg};color:${p.c};width:64px;height:64px;font-size:22px;font-weight:800;border-radius:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center">${p.fn[0]+p.ln[0]}</div>
+      <div class="ptd-main">
+        <div class="ptd-name">${p.fn} ${p.ln}</div>
+        <div class="ptd-meta">
+          <span style="font-size:12px;color:var(--ink3)">${p.id}</span>
+          <span style="color:var(--ink3)">·</span>
+          <span style="font-size:12px;color:var(--ink3)">${p.gender}</span>
+          <span style="color:var(--ink3)">·</span>
+          <span style="font-size:12px;color:var(--ink3)">${new Date().getFullYear()-parseInt(p.dob)} years</span>
+          <span style="color:var(--ink3)">·</span>
+          <span style="font-size:12px;color:var(--ink3)">${p.phone}</span>
+        </div>
+        <div class="ptd-tags">
+          <span class="pill" style="background:${p.bg};color:${p.c};border:1px solid ${p.c}44">${p.type==='regular'?'Regular patient':'New patient'}</span>
+          <span class="pill pill-blue">Blood: ${p.blood}</span>
+          <span class="pill pill-gray">${p.visits} total visits</span>
+          <span class="pill pill-green">Active</span>
+        </div>
+      </div>
+    </div>
+    <div class="vital-grid">
+      <div class="vital"><div class="vital-val">120<span class="vital-unit">/80</span></div><div class="vital-lbl">Blood Pressure</div><div class="vital-status" style="background:#059669"></div></div>
+      <div class="vital"><div class="vital-val">78<span class="vital-unit">kg</span></div><div class="vital-lbl">Weight</div><div class="vital-status" style="background:#059669"></div></div>
+      <div class="vital"><div class="vital-val">98<span class="vital-unit">mg/dL</span></div><div class="vital-lbl">Blood Sugar</div><div class="vital-status" style="background:#D97706"></div></div>
+      <div class="vital"><div class="vital-val">36.8<span class="vital-unit">°C</span></div><div class="vital-lbl">Temperature</div><div class="vital-status" style="background:#059669"></div></div>
+      <div class="vital"><div class="vital-val">72<span class="vital-unit">bpm</span></div><div class="vital-lbl">Heart Rate</div><div class="vital-status" style="background:#059669"></div></div>
+    </div>
+    <div class="ptd-grid">
+      <div class="info-box"><div class="ib-title"><i class="fas fa-stethoscope" aria-hidden="true"></i>Medical Info</div>
+        <div class="ib-row"><span>Primary diagnosis</span><span>${p.diag}</span></div>
+        <div class="ib-row"><span>Current medication</span><span>Amoxicillin 500mg</span></div>
+        <div class="ib-row"><span>Allergies</span><span style="color:var(--red)">Penicillin</span></div>
+        <div class="ib-row"><span>Past surgeries</span><span>Appendectomy 2018</span></div>
+        <div class="ib-row"><span>Insurance</span><span>Allianz Medical</span></div>
+      </div>
+      <div class="info-box"><div class="ib-title"><i class="fas fa-user aria-hidden="true"></i>Personal Info</div>
+        <div class="ib-row"><span>Date of birth</span><span>${p.dob}</span></div>
+        <div class="ib-row"><span>Gender</span><span>${p.gender}</span></div>
+        <div class="ib-row"><span>Blood type</span><span>${p.blood}</span></div>
+        <div class="ib-row"><span>Email</span><span style="color:var(--accent);font-size:11px">patient@email.com</span></div>
+        <div class="ib-row"><span>Emergency contact</span><span>+20 111 000 1234</span></div>
+      </div>
+    </div>
+    <div class="hist-box"><div class="hist-title">Visit History</div>
+      <div class="hist-item">
+        <div class="hist-icon" style="background:${p.bg};color:${p.c}"><i class="fas fa-stethoscope" aria-hidden="true"></i></div>
+        <div class="hist-body">
+          <div class="hist-date">May 20, 2026 · 10:00 AM</div>
+          <div class="hist-title2">${p.diag} — Follow-up</div>
+          <div class="hist-text">Significant improvement noted. Medication dosage adjusted. Next follow-up in 4 weeks. Patient advised on lifestyle changes.</div>
+          <div class="hist-rx"><span class="rx-pill">Amlodipine 5mg</span><span class="rx-pill">Aspirin 81mg</span><span class="rx-pill">Blood test ordered</span></div>
+        </div>
+      </div>
+      <div class="hist-item">
+        <div class="hist-icon" style="background:#EFF6FF;color:#2563EB"><i class="fas fa-list-check" aria-hidden="true"></i></div>
+        <div class="hist-body">
+          <div class="hist-date">April 15, 2026 · 11:30 AM</div>
+          <div class="hist-title2">Routine Checkup</div>
+          <div class="hist-text">Comprehensive blood panel performed. Results within normal range except for slightly elevated triglycerides. Dietary recommendations provided.</div>
+          <div class="hist-rx"><span class="rx-pill">CBC normal</span><span class="rx-pill">Lipid panel</span></div>
+        </div>
+      </div>
+      <div class="hist-item">
+        <div class="hist-icon" style="background:#FEF2F2;color:#DC2626"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i></div>
+        <div class="hist-body">
+          <div class="hist-date">March 2, 2026 · 2:00 PM</div>
+          <div class="hist-title2">Emergency Visit — High Fever</div>
+          <div class="hist-text">Temperature 38.5°C. Diagnosed with acute upper respiratory infection. Prescribed antibiotics for 5 days. Full recovery achieved.</div>
+          <div class="hist-rx"><span class="rx-pill">Amoxicillin 500mg</span><span class="rx-pill">Paracetamol 1g</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+  goView('ptdetail');
+}
+
+const doctors=[
+  {initials:'AS',name:'Dr. Ahmed Salem',spec:'General Medicine',c:'#2563EB',bg:'#EFF6FF'},
+  {initials:'MR',name:'Dr. Mona Reda',spec:'Internal Medicine',c:'#7C3AED',bg:'#F5F3FF'},
+  {initials:'KH',name:'Dr. Khalid Hassan',spec:'Cardiology',c:'#059669',bg:'#ECFDF5'},
+  {initials:'NN',name:'Dr. Nadia Nour',spec:'Pediatrics',c:'#D97706',bg:'#FFFBEB'},
+];
+let selDoc=0,selSlot='10:00 AM';
+const slots=['8:00 AM','8:30 AM','9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM','12:30 PM','2:00 PM','2:30 PM','3:00 PM','3:30 PM'];
+const fullSlots=['9:00 AM','9:30 AM','11:30 AM'];
+
+function renderDocCards(){
+  document.getElementById('doctor-cards').innerHTML=doctors.map((d,i)=>`
+    <div class="doc-card ${i===selDoc?'on':''}" onclick="selDoctor(${i})">
+      <div class="doc-card-ava" style="background:${d.bg};color:${d.c}">${d.initials}</div>
+      <div><div class="doc-card-name">${d.name}</div><div class="doc-card-spec">${d.spec}</div></div>
+    </div>
+  `).join('');
+}
+function selDoctor(i){selDoc=i;renderDocCards();updateFormData();}
+
+function renderSlots(){
+  document.getElementById('slots-wrap').innerHTML=slots.map(s=>`
+    <div class="slot ${fullSlots.includes(s)?'full':''} ${s===selSlot&&!fullSlots.includes(s)?'on':''}" onclick="${fullSlots.includes(s)?'':'pickSlot(\''+s+'\')'}">${s}</div>
+  `).join('');
+}
+function pickSlot(s){selSlot=s;renderSlots();updateFormData();}
+
+const remindOpts=[
+  {icon:'ti-brand-whatsapp',label:'WhatsApp',color:'#059669',on:true},
+  {icon:'ti-message',label:'SMS',color:'#2563EB',on:true},
+  {icon:'ti-mail',label:'Email',color:'#7C3AED',on:false},
+  {icon:'ti-device-mobile',label:'Push notification',color:'#D97706',on:true},
+];
+function renderRemindOpts(){
+  document.getElementById('remind-opts').innerHTML=remindOpts.map((r,i)=>`
+    <div class="remind-row">
+      <div class="remind-left" style="color:${r.color}"><i class="ti ${r.icon}" aria-hidden="true" style="font-size:17px"></i><span style="color:var(--ink)">${r.label}</span></div>
+      <button class="toggle2 ${r.on?'on':''}" onclick="this.classList.toggle('on')" aria-label="toggle"></button>
+    </div>
+  `).join('');
+}
+
+const steps=['Patient Info','Select Slot','Reminders'];
+let curStep=1;
+function renderStepTrack(){
+  document.getElementById('step-track').innerHTML=steps.map((s,i)=>{
+    const n=i+1;
+    const cls=n<curStep?'done':n===curStep?'act':'';
+    return `<div class="step-item ${cls}">
+      <div class="step-circle">${n<curStep?'<i class="fas fa-check" aria-hidden="true" style="font-size:11px"></i>':n}</div>
+      <div class="step-lbl">${s}</div>
+      ${i<steps.length-1?'<div class="step-line"></div>':''}
+    </div>`;
+  }).join('');
+}
+function bNext(n){
+  if(n>curStep && !validateStep(curStep)) return;
+  curStep=n;
+  renderStepTrack();
+  [1,2,3].forEach(i=>{
+    const el=document.getElementById('bstep'+i);
+    if(el) el.style.display=i===n?'block':'none';
+  });
+  if(n===2){renderDocCards();renderSlots();updateFormData();}
+  if(n===3){renderRemindOpts();updateFormData();}
+}
+
+function doConfirm(){
+  updateFormData();
+  const msg=`Appointment booked for ${bookingData.fname} ${bookingData.lname} with ${bookingData.doctor.name} on ${bookingData.slot}`;
+  showToast(msg);
+  goView('dashboard');
+}
+
+const channels=[
+  {icon:'ti-brand-whatsapp',name:'WhatsApp',desc:'Real-time messages via WhatsApp Business',stats:'98% delivery rate',c:'#059669',bg:'#ECFDF5',on:true},
+  {icon:'ti-message',name:'SMS',desc:'Short text messages to any mobile number',stats:'96% delivery rate',c:'#2563EB',bg:'#EFF6FF',on:true},
+  {icon:'ti-mail',name:'Email',desc:'Detailed appointment emails with attachments',stats:'82% open rate',c:'#7C3AED',bg:'#F5F3FF',on:false},
+  {icon:'ti-device-mobile',name:'Push Notification',desc:'In-app notifications via MediBook patient app',stats:'74% click rate',c:'#D97706',bg:'#FFFBEB',on:true},
+];
+const remQueue=[
+  {time:'9:00',name:'Sarah Mahmoud',channel:'WhatsApp',appt:'Follow-up 2PM',sent:true},
+  {time:'9:00',name:'Youssef Hassan',channel:'SMS',appt:'Checkup 3PM',sent:true},
+  {time:'10:00',name:'Ahmed Ali',channel:'WhatsApp + SMS',appt:'New visit 4PM',sent:true},
+  {time:'12:00',name:'Karim Omar',channel:'WhatsApp',appt:'Consultation 5PM',sent:false},
+  {time:'12:30',name:'Tarek Farouk',channel:'Email',appt:'Annual checkup 6PM',sent:false},
+];
+const autoRules=[
+  {icon:'ti-clock',name:'Pre-appointment reminder',desc:'Send reminder 2 hours before every appointment',c:'#2563EB',bg:'#EFF6FF',on:true},
+  {icon:'ti-calendar-check',name:'Day-before reminder',desc:'Send reminder the day before any scheduled visit',c:'#7C3AED',bg:'#F5F3FF',on:true},
+  {icon:'ti-user-x',name:'No-show follow-up',desc:'Automatically message patients who missed appointments',c:'#DC2626',bg:'#FEF2F2',on:true},
+  {icon:'ti-heart-rate-monitor',name:'Post-visit follow-up',desc:'Check-in message 3 days after a visit',c:'#059669',bg:'#ECFDF5',on:false},
+  {icon:'ti-calendar-due',name:'Recurring appointment reminder',desc:'Remind chronic patients to book their monthly visit',c:'#D97706',bg:'#FFFBEB',on:true},
+];
+
+function renderReminders(){
+  document.getElementById('channels').innerHTML=channels.map((c,i)=>`
+    <div class="channel-row">
+      <div class="ch-icon" style="background:${c.bg};color:${c.c}"><i class="ti ${c.icon}" aria-hidden="true"></i></div>
+      <div class="ch-info"><div class="ch-name">${c.name}</div><div class="ch-desc">${c.desc}</div><div class="ch-stats">${c.stats}</div></div>
+      <button class="tgl ${c.on?'on':''}" onclick="this.classList.toggle('on')" aria-label="toggle"></button>
+    </div>
+  `).join('');
+
+  document.getElementById('rem-queue').innerHTML=remQueue.map(r=>`
+    <div class="sched-row">
+      <div class="sched-time">${r.time}</div>
+      <div style="flex:1"><div class="sched-name">${r.name}</div><div class="sched-channel">${r.channel} · ${r.appt}</div></div>
+      <div class="sched-status ${r.sent?'pill-green':'pill-amber'}">${r.sent?'Sent':'Queued'}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('auto-rules').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">`+autoRules.map(r=>`
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--b);border-radius:var(--r);padding:10px 12px">
+      <div style="width:34px;height:34px;border-radius:8px;background:${r.bg};color:${r.c};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0"><i class="ti ${r.icon}" aria-hidden="true"></i></div>
+      <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.name}</div><div style="font-size:11px;color:var(--ink3)">${r.desc.substring(0,40)}…</div></div>
+      <button class="tgl ${r.on?'on':''}" onclick="this.classList.toggle('on')" aria-label="toggle"></button>
+    </div>
+  `).join('')+`</div>`;
+}
+
+function goView(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('on'));
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('on'));
+  document.getElementById('view-'+v).classList.add('on');
+  const map={dashboard:0,booking:1,patients:2,reminders:3,reports:4,billing:5,prescriptions:6,settings:7,ptdetail:2};
+  if(map[v]!==undefined) document.querySelectorAll('.nav-item')[map[v]].classList.add('on');
+  if(v==='booking'){curStep=1;renderStepTrack();bNext(1);}
+}
+
+let tT;
+function showToast(msg){
+  document.getElementById('toast-msg').textContent=msg;
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(tT);
+  tT=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// Booking form data
+let bookingData={fname:'',lname:'',phone:'',email:'',specialty:'General Medicine',visitType:'Consultation',complaint:'',priority:'Normal',insurance:'None',doctor:doctors[0],slot:'10:00 AM'};
+
+function updateSummary(){
+  const sumBlocks=document.querySelectorAll('.book-right .sum-block');
+  const d=bookingData.doctor;
+  const priorityBg={Normal:'pill-blue',Medium:'pill-amber',Urgent:'pill-red'};
+  if(sumBlocks.length>0){
+    sumBlocks[0].innerHTML=`
+      <div class="sum-row"><span>Patient</span><span>${bookingData.fname || 'Patient Name'} ${bookingData.lname || ''}</span></div>
+      <div class="sum-row"><span>Date</span><span>Mon, May 25 2026</span></div>
+      <div class="sum-row"><span>Time</span><span>${bookingData.slot}</span></div>
+      <div class="sum-row"><span>Type</span><span>${bookingData.visitType}</span></div>
+      <div class="sum-row"><span>Priority</span><span><span class="pill ${priorityBg[bookingData.priority]||'pill-blue'}">${bookingData.priority}</span></span></div>
+    `;
+    const doc=document.querySelector('.book-right .sum-doctor');
+    if(doc){
+      doc.innerHTML=`
+        <div class="sum-doc-ava" style="background:${d.bg};color:${d.c}">${d.initials}</div>
+        <div><div style="font-size:13px;font-weight:700">${d.name}</div><div style="font-size:11px;color:var(--ink3)">${d.spec}</div><div style="display:flex;gap:2px;margin-top:3px;color:#F59E0B;font-size:12px">★★★★★ <span style="font-size:11px;color:var(--ink3);margin-right:3px">(214)</span></div></div>
+      `;
+    }
+  }
+}
+
+function updateFormData(){
+  bookingData.fname=document.querySelector('#bstep1 input[placeholder="Mohamed"]')?.value||'';
+  bookingData.lname=document.querySelector('#bstep1 input[placeholder="Al-Sayed"]')?.value||'';
+  bookingData.phone=document.querySelector('#bstep1 input[type="tel"]')?.value||'';
+  bookingData.email=document.querySelector('#bstep1 input[type="email"]')?.value||'';
+  bookingData.specialty=document.querySelector('#bstep1 select')?.value||'General Medicine';
+  bookingData.visitType=document.querySelectorAll('#bstep1 select')[1]?.value||'Consultation';
+  bookingData.priority=document.querySelectorAll('#bstep1 select')[3]?.value||'Normal';
+  bookingData.insurance=document.querySelectorAll('#bstep1 select')[4]?.value||'None';
+  bookingData.doctor=doctors[selDoc];
+  bookingData.slot=selSlot;
+  updateSummary();
+}
+
+function validateStep(step){
+  if(step===1){
+    const fname=document.querySelector('#bstep1 input[placeholder="Mohamed"]')?.value;
+    const lname=document.querySelector('#bstep1 input[placeholder="Al-Sayed"]')?.value;
+    const phone=document.querySelector('#bstep1 input[type="tel"]')?.value;
+    const complaint=document.querySelector('#bstep1 textarea')?.value;
+    if(!fname||!lname||!phone||!complaint){
+      showToast('Please fill all required fields (*)');
+      return false;
+    }
+  }
+  return true;
+}
+
+function handleSearch(q){
+  if(!q.trim())return;
+  const results=patients.filter(p=>`${p.fn} ${p.ln} ${p.id} ${p.phone}`.toLowerCase().includes(q.toLowerCase()));
+  if(results.length===1){
+    viewPt(results[0].id);
+  }else if(results.length>1){
+    goView('patients');
+    filterPts(q);
+  }else{
+    showToast('No patients found');
+  }
+}
+
+renderTimeline(appts);
+renderWaiting();
+renderMC();
+renderPtGrid(patients);
+renderReminders();
+renderStepTrack();
+updateSummary();
+document.querySelector('.top-search').addEventListener('keyup',(e)=>{if(e.key==='Enter')handleSearch(e.target.value);});
+</script>
+</body>
+</html>
