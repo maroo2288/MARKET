@@ -2764,7 +2764,7 @@
 
   function mkForm(opts) {
     const fields = opts.fields || [
-      {id:'subject',label:'عنوان مختصر',type:'text',required:true},
+      {id:'subject',label:'عنوان مختصر (اختياري)',type:'text',required:false},
       {id:'location',label:'المكان (اختياري)',type:'text',required:false},
       {id:'time',label:'ميعاد مناسب (اختياري)',type:'text',required:false},
     ];
@@ -2775,8 +2775,8 @@
       <div class="gold-divider"></div>
       <form class="form" id="rf_${esc(opts.fid)}">
         ${fields.map(f=>`<div class="field"><span class="field__label">${esc(f.label)}</span><input class="input" id="fi_${esc(opts.fid)}_${esc(f.id)}" type="${esc(f.type||'text')}" ${f.required?'required':''} /></div>`).join('')}
-        <div class="field"><span class="field__label">التفاصيل</span>
-          <textarea class="textarea" id="fm_${esc(opts.fid)}" placeholder="${esc(opts.ph||'اكتب التفاصيل...')}" required></textarea>
+        <div class="field"><span class="field__label">التفاصيل (اختياري)</span>
+          <textarea class="textarea" id="fm_${esc(opts.fid)}" placeholder="${esc(opts.ph||'اكتب التفاصيل... (اختياري)')}"></textarea>
           <div class="hint">هتظهر رسالة تأكيد وتقدر تضغط واتساب لإرسال الطلب.</div></div>
         <button class="btn btn--primary btn--full" type="submit">تم</button>
       </form></div>`;
@@ -2792,8 +2792,8 @@
       const p=ensureLogin(); if(!p)return;
       const parts=[];
       fields.forEach(f=>{ const v=String(el(`fi_${opts.fid}_${f.id}`)?.value||'').trim(); if(v)parts.push(`${f.label}: ${v}`); });
-      const msg=String(el(`fm_${opts.fid}`)?.value||'').trim(); if(!msg)return;
-      const payload={...p,section:opts.section,subsection:opts.sub||'',message:parts.length?`${parts.join('\n')}\n\n${msg}`:msg};
+      const msg=String(el(`fm_${opts.fid}`)?.value||'').trim();
+      const payload={...p,section:opts.section,subsection:opts.sub||'',message:parts.length?(msg?`${parts.join('\n')}\n\n${msg}`:parts.join('\n')):(msg||'-')};
       const text=fmtPayload(payload);
       showConfirm({text:'سيتم الرد عليك خلال دقائق.',payload,waText:text,emailSubject:opts.sub?`${opts.section} - ${opts.sub}`:opts.section,emailBody:text});
       rf.reset();
@@ -2825,7 +2825,7 @@
     </div>`;
     h += mkForm({fid:'webEdit',section:svc.title,sub:'تعديل على موقع معين',title:'تعديل على موقع معين',subtitle:'اكتب استفسار كامل.',ph:'رابط الموقع + التعديل المطلوب...'});
     h += mkForm({fid:'webBuild',section:svc.title,sub:'تطبيق فكرة موقع',title:'تطبيق فكرة موقع',subtitle:'اكتب كل البيانات المطلوبة.',ph:'نوع الموقع + الصفحات + الألوان + الوظائف...',
-      fields:[{id:'siteName',label:'اسم الموقع',type:'text',required:true},{id:'siteType',label:'نوع الموقع',type:'text',required:false},{id:'pages',label:'الصفحات المطلوبة',type:'text',required:false},{id:'budget',label:'الميزانية التقريبية',type:'text',required:false}]});
+      fields:[{id:'siteName',label:'اسم الموقع',type:'text',required:false},{id:'siteType',label:'نوع الموقع',type:'text',required:false},{id:'pages',label:'الصفحات المطلوبة',type:'text',required:false},{id:'budget',label:'الميزانية التقريبية',type:'text',required:false}]});
     return h;
   }
   function wireWebPanel(item) {
@@ -2898,7 +2898,7 @@
     const svc=SERVICES.find(s=>s.id==='cctv');
     let h=`<div id="cctvRoot">${mkSubCards(CCTV_SUB)}</div>`;
     CCTV_SUB.forEach(sub=>{
-      const f=sub.id==='install'?[{id:'place',label:'المكان',type:'text',required:true},{id:'count',label:'عدد الكاميرات',type:'text',required:false},{id:'time',label:'ميعاد مناسب',type:'text',required:false}]:[{id:'place',label:'المكان',type:'text',required:false},{id:'problem',label:'نوع العطل',type:'text',required:false},{id:'time',label:'ميعاد مناسب',type:'text',required:false}];
+      const f=sub.id==='install'?[{id:'place',label:'المكان',type:'text',required:false},{id:'count',label:'عدد الكاميرات',type:'text',required:false},{id:'time',label:'ميعاد مناسب',type:'text',required:false}]:[{id:'place',label:'المكان',type:'text',required:false},{id:'problem',label:'نوع العطل',type:'text',required:false},{id:'time',label:'ميعاد مناسب',type:'text',required:false}];
       h+=mkForm({fid:`cc_${sub.id}`,section:svc.title,sub:sub.title,title:`${svc.title} — ${sub.title}`,subtitle:'اكتب استفسارك.',ph:'التفاصيل...',fields:f});
     });
     return h;
