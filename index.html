@@ -2188,8 +2188,8 @@
     <div class="form">
       <div class="field"><span class="field__label" id="langLabel">اللغة</span>
         <select class="input" id="loginLangSelect"><option value="ar">العربية</option><option value="en">English</option></select></div>
-      <div class="field"><span class="field__label" id="labelFullName">الاسم الثلاثي</span>
-        <input class="input" id="fullName" name="fullName" autocomplete="name" required minlength="6" placeholder="مثال: محمد أحمد علي" /></div>
+      <div class="field"><span class="field__label" id="labelFullName">الاسم (اختياري)</span>
+        <input class="input" id="fullName" name="fullName" autocomplete="name" placeholder="مثال: محمد أحمد علي" /></div>
       <div class="field"><span class="field__label" id="labelPhone">رقم الموبايل</span>
         <div class="phone-row">
           <div class="country-select-wrap" id="cpWrap_phone">
@@ -2209,15 +2209,8 @@
         </div>
         <small class="phone-hint" id="phoneHint">01XXXXXXXXX  (10-11 رقم)</small>
       </div>
-      <div class="field"><span class="field__label" id="labelAddress">العنوان</span>
-        <input class="input" id="address" name="address" autocomplete="street-address" required placeholder="المدينة / المنطقة / الشارع" /></div>
-      <div class="field"><span class="field__label" id="labelEmail">البريد الإلكتروني</span>
-        <input class="input" id="email" name="email" type="email" autocomplete="email" required placeholder="name@gmail.com" /></div>
-      <div class="field"><span class="field__label" id="labelPassword">كلمة المرور</span>
-        <input class="input" id="password" name="password" type="password" autocomplete="current-password" required minlength="6" placeholder="اكتب كلمة المرور" /></div>
     </div>
     <div class="modal__error" id="loginError" role="alert" hidden></div>
-    <button class="btn--forgot" id="forgotPasswordBtn" type="button">نسيت كلمة المرور؟</button>
     <div class="modal__actions">
       <button class="btn btn--primary" type="submit">تم</button>
     </div>
@@ -2231,44 +2224,6 @@
         تصفح كضيف — التسجيل عند الطلب فقط
       </button>
       <div style="text-align:center; font-size:0.78rem; color:var(--muted);">سجّل بياناتك مرة واحدة فقط لما تطلب خدمة</div>
-    </div>
-  </form>
-</dialog>
-
-<dialog class="modal" id="resetModal">
-  <form class="modal__content" id="resetForm" method="dialog">
-    <div class="modal__header">
-      <div class="modal__title">استعادة كلمة المرور</div>
-      <div class="modal__subtitle">اكتب نفس الإيميل ورقم الموبايل المسجلين، وبعدها كلمة المرور الجديدة.</div>
-    </div>
-    <div class="form">
-      <div class="field"><span class="field__label">البريد الإلكتروني المسجل</span><input class="input" id="resetEmail" type="email" required /></div>
-      <div class="field"><span class="field__label">رقم الموبايل المسجل</span>
-        <div class="phone-row">
-          <div class="country-select-wrap" id="cpWrap_resetPhone">
-            <select id="resetPhoneCountry" autocomplete="tel-country-code"></select>
-            <button type="button" class="cpicker-btn" id="cpBtn_resetPhone" aria-haspopup="listbox">
-              <span class="cpicker-btn__flag">🇪🇬</span>
-              <span class="cpicker-btn__code">+20</span>
-              <span class="cpicker-btn__name">مصر</span>
-              <i class="fa-solid fa-chevron-down cpicker-btn__arrow"></i>
-            </button>
-            <div class="cpicker-panel" id="cpPanel_resetPhone">
-              <div class="cpicker-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="ابحث عن دولة..." id="cpSearch_resetPhone" autocomplete="off" /></div>
-              <div class="cpicker-list" id="cpList_resetPhone"></div>
-            </div>
-          </div>
-          <input class="input" id="resetPhone" inputmode="tel" autocomplete="tel-national" required placeholder="01000000000" />
-        </div>
-        <small class="phone-hint" id="resetPhoneHint">01XXXXXXXXX  (10-11 رقم)</small>
-      </div>
-      <div class="field"><span class="field__label">كلمة المرور الجديدة</span><input class="input" id="resetPassword" type="password" minlength="6" required /></div>
-      <div class="field"><span class="field__label">تأكيد كلمة المرور الجديدة</span><input class="input" id="resetPassword2" type="password" minlength="6" required /></div>
-    </div>
-    <div class="modal__error" id="resetError" role="alert" hidden></div>
-    <div class="modal__actions">
-      <button class="btn btn--primary" type="submit">حفظ الباسورد الجديد</button>
-      <button class="btn btn--ghost" id="resetClose" type="button">إلغاء</button>
     </div>
   </form>
 </dialog>
@@ -2698,7 +2653,6 @@
 
   function initCountryPickers() {
     initOnePicker('cpWrap_phone',      'phoneCountry',      'cpBtn_phone',      'cpPanel_phone',      'cpSearch_phone',      'cpList_phone',      'phone',      '+20', 'phoneHint');
-    initOnePicker('cpWrap_resetPhone', 'resetPhoneCountry', 'cpBtn_resetPhone', 'cpPanel_resetPhone', 'cpSearch_resetPhone', 'cpList_resetPhone', 'resetPhone', '+20', 'resetPhoneHint');
     initOnePicker('cpWrap_gcPhone',    'gcPhoneCountry',    'cpBtn_gcPhone',    'cpPanel_gcPhone',    'cpSearch_gcPhone',    'cpList_gcPhone',    'gcPhone',    '+20', 'gcPhoneHint');
   }
 
@@ -2712,7 +2666,7 @@
       window.fb = fb; // expose for rating system
     } catch {}
   }
-  const saveUser = async p => { if(!fb.ok)return; await fb.db.collection('users').doc(p.phone).set({ fullName:p.fullName,phone:p.phone,address:p.address||'',email:p.email||'',createdAt:p.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString() },{merge:true}); };
+  const saveUser = async p => { if(!fb.ok)return; await fb.db.collection('users').doc(p.phone).set({ fullName:p.fullName||'',phone:p.phone,createdAt:p.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString() },{merge:true}); };
   const saveReq  = async (payload,ch) => { if(!fb.ok)return; await fb.db.collection('requests').add({ createdAt:new Date().toISOString(),channel:ch||'unknown',section:payload.section||'',subsection:payload.subsection||'',idea:payload.idea||'',message:payload.message||'',fullName:payload.fullName||'',phone:payload.phone||'',address:payload.address||'' }); };
 
   
@@ -2733,7 +2687,7 @@
   const waUrl   = t => `https://wa.me/${OWNER.waPhoneIntl}?text=${encodeURIComponent(t)}`;
   const mailUrl = (s,b) => `mailto:${OWNER.email}?subject=${encodeURIComponent(s||'')}&body=${encodeURIComponent(b||'')}`;
   function fmtPayload(p) {
-    const L=['مرحبًا،','',`الاسم: ${p.fullName}`,`الموبايل: ${p.phone}`,`العنوان: ${p.address||'-'}`,`الإيميل: ${p.email||'-'}`,'',`القسم: ${p.section}`];
+    const L=['مرحبًا،','',`الاسم: ${p.fullName||'-'}`,`الموبايل: ${p.phone}`,'',`القسم: ${p.section}`];
     if(p.subsection) L.push(`الخدمة: ${p.subsection}`);
     if(p.idea) L.push(`الفكرة: ${p.idea}`);
     L.push('','التفاصيل:',p.message||'-','','تم الإرسال من موقع الخدمات.');
@@ -2746,14 +2700,10 @@
     const L=el('loginLangSelect'); if(L) L.value=en?'en':'ar';
     const s=(id,v)=>{ const e=el(id); if(e)e.textContent=v; };
     s('loginTitle',    en?'Account':'الحساب');
-    s('loginSubtitle', en?'Enter your info once to attach it to every inquiry.':'اكتب بياناتك مرة واحدة عشان تتسجل تلقائيًا مع أي استفسار.');
+    s('loginSubtitle', en?'Enter your phone number once to attach it to every inquiry.':'اكتب رقم موبايلك مرة واحدة عشان يتسجل تلقائيًا مع أي استفسار.');
     s('langLabel',     en?'Language':'اللغة');
-    s('labelFullName', en?'Full Name (3 parts)':'الاسم الثلاثي');
+    s('labelFullName', en?'Name (optional)':'الاسم (اختياري)');
     s('labelPhone',    en?'Mobile Number (11 digits)':'رقم الموبايل (11 رقم)');
-    s('labelAddress',  en?'Address':'العنوان');
-    s('labelEmail',    en?'Email':'البريد الإلكتروني');
-    s('labelPassword', en?'Password':'كلمة المرور');
-    s('forgotPasswordBtn', en?'Forgot password?':'نسيت كلمة المرور؟');
     s('quickWhatsApp', en?'WhatsApp':'واتساب');
     s('quickEmail',    en?'Email':'البريد');
     localStorage.setItem(LOGIN_LANG_KEY, en?'en':'ar');
@@ -3086,9 +3036,7 @@
         el('ppGuestBanner').style.display = 'none';
         el('ppLogoutLabel').textContent = 'تسجيل خروج';
         let rows = '';
-        if (p.email)   rows += buildInfoRow('envelope', 'البريد الإلكتروني', p.email);
-        if (p.phone)   rows += buildInfoRow('phone', 'رقم الموبايل', p.phone);
-        if (p.address) rows += buildInfoRow('location-dot', 'العنوان', p.address);
+        rows += buildInfoRow('phone', 'رقم الموبايل', p.phone);
         if (p.password === '__google__') rows += buildInfoRow('google','طريقة التسجيل','Google Account');
         el('ppInfoList').innerHTML = rows;
       } else if (isGuest) {
@@ -3202,39 +3150,17 @@
       setTimeout(triggerDiamondPulse, 80);
     });
 
-    el('forgotPasswordBtn')?.addEventListener('click',()=>{ el('resetError').hidden=true; el('resetForm').reset(); el('resetModal').showModal(); });
-    el('resetClose')?.addEventListener('click',()=>el('resetModal').close());
-    el('resetForm')?.addEventListener('submit',e=>{
-      e.preventDefault(); el('resetError').hidden=true;
-      const ex=getProfile(); if(!ex){el('resetError').textContent='لا يوجد حساب محفوظ على هذا الجهاز.';el('resetError').hidden=false;return;}
-      const email=String(el('resetEmail').value||'').trim();
-      const { full: phone, digits: phoneDigits } = buildFullPhone('resetPhoneCountry','resetPhone');
-      const np=String(el('resetPassword').value||''),np2=String(el('resetPassword2').value||'');
-      if(!validEmail(email)){el('resetError').textContent='اكتب بريد إلكتروني صحيح.';el('resetError').hidden=false;return;}
-      if(!validPhone(phoneDigits,'resetPhoneCountry')){el('resetError').textContent='رقم الهاتف غير صحيح للدولة المختارة.';el('resetError').hidden=false;return;}
-      if(np.length<6){el('resetError').textContent='كلمة المرور لازم تكون 6 أحرف على الأقل.';el('resetError').hidden=false;return;}
-      if(np!==np2){el('resetError').textContent='تأكيد كلمة المرور غير مطابق.';el('resetError').hidden=false;return;}
-      if(ex.email!==email||ex.phone!==phone){el('resetError').textContent='الإيميل أو رقم الموبايل غير مطابقين.';el('resetError').hidden=false;return;}
-      const updated={...ex,password:np,updatedAt:new Date().toISOString()};
-      setProfile(updated);profileCache=updated;saveUser(updated).catch(()=>{});el('resetModal').close();
-      el('loginError').textContent='تم تغيير كلمة المرور. ادخل بالباسورد الجديد.';el('loginError').hidden=false;
-    });
     el('loginForm')?.addEventListener('submit',e=>{
       e.preventDefault(); el('loginError').hidden=true;
       const fullName=String(el('fullName').value||'').trim();
       const { full: fullPhone, digits: phoneDigits } = buildFullPhone('phoneCountry','phone');
-      const address=String(el('address').value||'').trim(),email=String(el('email').value||'').trim(),password=String(el('password').value||'');
-      if(!validEmail(email)){el('loginError').textContent='اكتب بريد إلكتروني صحيح.';el('loginError').hidden=false;return;}
-      if(password.length<6){el('loginError').textContent='الباسورد لازم يكون 6 أحرف على الأقل.';el('loginError').hidden=false;return;}
-      const ex=getProfile();
-      if(ex&&ex.email===email){
-        if(ex.password!==password){el('loginError').textContent='الإيميل أو الباسورد غير صحيح.';el('loginError').hidden=false;return;}
-        profileCache=ex;localStorage.setItem(SESSION_KEY,'1');isGuest=false;el('loginModal').close();updateGreeting();playRisingTone();return;
-      }
-      if(!fullName||fullName.split(/\s+/).length<3){el('loginError').textContent='اكتب الاسم الثلاثي (3 كلمات).';el('loginError').hidden=false;return;}
       if(!validPhone(phoneDigits,'phoneCountry')){el('loginError').textContent='رقم الهاتف غير صحيح للدولة المختارة.';el('loginError').hidden=false;return;}
-      if(!address){el('loginError').textContent='اكتب العنوان.';el('loginError').hidden=false;return;}
-      const p={fullName,phone:fullPhone,address,email,password,createdAt:new Date().toISOString()};
+      const ex=getProfile();
+      if(ex&&ex.phone===fullPhone){
+        if(fullName) ex.fullName=fullName;
+        setProfile(ex);profileCache=ex;localStorage.setItem(SESSION_KEY,'1');isGuest=false;saveUser(ex).catch(()=>{});el('loginModal').close();updateGreeting();playRisingTone();return;
+      }
+      const p={fullName,phone:fullPhone,createdAt:new Date().toISOString()};
       setProfile(p);profileCache=p;localStorage.setItem(SESSION_KEY,'1');isGuest=false;saveUser(p).catch(()=>{});el('loginModal').close();updateGreeting();playRisingTone();
     });
     el('confirmClose')?.addEventListener('click',()=>el('confirmModal').close());
