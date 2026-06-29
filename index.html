@@ -4623,21 +4623,23 @@ function smoothScrollToSection(id) {
   // ── Load ratings from Firebase ──
   function loadRatings(){
     if(!window.fb||!window.fb.ok) return;
-    // Fetch all then filter client-side — avoids composite index issues
-    // and handles old docs that have no status field
+    // No orderBy — avoids index/missing-field errors; sort client-side
     window.fb.db.collection('ratings')
-      .orderBy('createdAt','desc')
       .get()
       .then(function(snap){
         var docs = [];
         snap.forEach(function(d){ var obj=d.data(); obj._id=d.id; docs.push(obj); });
-        // show approved docs OR docs with no status (legacy)
+        // show approved docs OR docs with no status field (legacy)
         docs = docs.filter(function(d){
           return !d.status || d.status === 'approved';
         });
+        // sort newest first
+        docs.sort(function(a,b){
+          return new Date(b.createdAt||0) - new Date(a.createdAt||0);
+        });
         processRatings(docs);
       })
-      .catch(function(){});
+      .catch(function(err){ console.error('ratings load error:', err); });
   }
 
   function processRatings(docs){
