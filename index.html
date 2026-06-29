@@ -4623,30 +4623,21 @@ function smoothScrollToSection(id) {
   // ── Load ratings from Firebase ──
   function loadRatings(){
     if(!window.fb||!window.fb.ok) return;
+    // Fetch all then filter client-side — avoids composite index issues
+    // and handles old docs that have no status field
     window.fb.db.collection('ratings')
-      .where('status','==','approved')
       .orderBy('createdAt','desc')
       .get()
       .then(function(snap){
         var docs = [];
         snap.forEach(function(d){ var obj=d.data(); obj._id=d.id; docs.push(obj); });
-        // extra client-side filter for safety
-        docs = docs.filter(function(d){ return d.status === 'approved'; });
+        // show approved docs OR docs with no status (legacy)
+        docs = docs.filter(function(d){
+          return !d.status || d.status === 'approved';
+        });
         processRatings(docs);
       })
-      .catch(function(){
-        // Fallback: fetch all and filter client-side (in case composite index not created yet)
-        window.fb.db.collection('ratings')
-          .orderBy('createdAt','desc')
-          .get()
-          .then(function(snap){
-            var docs = [];
-            snap.forEach(function(d){ var obj=d.data(); obj._id=d.id; docs.push(obj); });
-            docs = docs.filter(function(d){ return d.status === 'approved'; });
-            processRatings(docs);
-          })
-          .catch(function(){});
-      });
+      .catch(function(){});
   }
 
   function processRatings(docs){
@@ -4865,12 +4856,15 @@ function smoothScrollToSection(id) {
     var submitBtn = el('ratingSubmitBtn');
     if(submitBtn) submitBtn.addEventListener('click', submitRating);
 
-    // If already rated, hide form
+    // If already rated, show thank-you message but keep form usable
     if(localStorage.getItem(SHOWN_KEY)==='1'){
-      var fw = el('ratingFormWrap');
-      if(fw){ fw.style.opacity='0.5'; fw.style.pointerEvents='none'; }
-      var title = fw && fw.querySelector('.rating-form-title');
-      if(title) title.textContent = '\u0634\u0643\u0631\u064b\u0627 \u2014 \u0644\u0642\u062f \u0642\u064a\u0651\u0645\u062a \u0627\u0644\u0645\u0648\u0642\u0639 \u0645\u0633\u0628\u0642\u064b\u0627 \u2705';
+      var succ = el('ratingSuccess');
+      if(succ){
+        succ.innerHTML = '<i class="fa-solid fa-check-circle"></i> لقد قيّمت الموقع مسبقًا — يمكنك التقييم مرة أخرى إذا أردت';
+        succ.classList.add('show');
+      }
+      // reset SHOWN_KEY so form stays open for future use
+      localStorage.removeItem(SHOWN_KEY);
     }
 
     // wait for Firebase then load
