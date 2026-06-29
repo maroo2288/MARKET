@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>لوحة الطلبات — Maroo Services</title>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root{
+    --bg:#0a0a0a; --panel:#141414; --panel2:#1c1c1c; --border:rgba(255,255,255,0.1);
+    --gold:#D4AF37; --ivory:#F5F1E8; --muted:#9a9a9a; --ok:#5ad17a; --new:#e05a5a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--ivory); font-family:'Segoe UI',Tahoma,sans-serif;
+    margin:0; padding:20px; min-height:100vh;
+  }
+  .wrap{ max-width:1000px; margin:0 auto; }
+  .top{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px; }
+  h1{ color:var(--gold); font-size:1.4rem; margin:0; }
+  .sub{ color:var(--muted); font-size:0.85rem; margin-top:4px; }
+  .stat-bar{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+  .stat{ background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px 16px; font-size:0.85rem; }
+  .stat b{ color:var(--gold); font-size:1.1rem; display:block; }
+  .controls{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+  input, select{
+    background:var(--panel2); border:1px solid var(--border); color:var(--ivory);
+    border-radius:8px; padding:9px 12px; font-size:0.9rem; font-family:inherit;
+  }
+  input{ flex:1; min-width:180px; }
+  button{
+    background:var(--gold); color:#000; border:none; border-radius:8px;
+    padding:9px 16px; font-weight:700; cursor:pointer; font-size:0.9rem;
+  }
+  button.secondary{ background:transparent; color:var(--ivory); border:1px solid var(--border); }
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:12px;
+    padding:16px; margin-bottom:12px; position:relative;
+  }
+  .card.is-new{ border-color:var(--new); box-shadow:0 0 0 1px var(--new); }
+  .card-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; }
+  .card-title{ font-weight:700; color:var(--gold); font-size:1rem; }
+  .card-time{ color:var(--muted); font-size:0.78rem; white-space:nowrap; }
+  .card-row{ margin-top:8px; font-size:0.88rem; line-height:1.6; }
+  .card-row b{ color:var(--ivory); }
+  .card-row .label{ color:var(--muted); }
+  .msg-box{
+    background:#000; border-radius:8px; padding:10px; margin-top:8px;
+    font-size:0.85rem; line-height:1.7; white-space:pre-wrap; color:#ddd;
+  }
+  .actions{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .actions a, .actions button{
+    text-decoration:none; font-size:0.82rem; padding:7px 14px; border-radius:8px;
+  }
+  .wa-btn{ background:#25D366; color:#000; }
+  .channel-tag{
+    display:inline-block; font-size:0.72rem; padding:2px 8px; border-radius:6px;
+    background:rgba(212,175,55,0.15); color:var(--gold); margin-right:6px;
+  }
+  #empty{ text-align:center; color:var(--muted); padding:40px 0; display:none; }
+  #status{ text-align:center; color:var(--muted); padding:20px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>📋 لوحة الطلبات</h1>
+      <div class="sub">بيانات لايف من Firestore — مفيش حاجة تتفوتك حتى لو حد ضغط "تم" ومفتحش واتساب</div>
+    </div>
+    <button class="secondary" id="refreshBtn"><i class="fa-solid fa-rotate"></i> تحديث</button>
+  </div>
+
+  <div class="stat-bar">
+    <div class="stat"><b id="statTotal">0</b>إجمالي الطلبات</div>
+    <div class="stat"><b id="statToday">0</b>طلبات اليوم</div>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="بحث بالاسم أو رقم الموبايل..." />
+    <select id="sectionFilter"><option value="">كل الأقسام</option></select>
+  </div>
+
+  <div id="status">جاري الاتصال بفايربيز...</div>
+  <div id="empty">لا توجد طلبات حتى الآن.</div>
+  <div id="cardsContainer"></div>
+</div>
+
+<script>
+const FIREBASE_CONFIG = { apiKey:'AIzaSyBLWoOfEwXty6oLVCRoEn0jkFsyArXp-Nk', authDomain:'market-maroo.firebaseapp.com', projectId:'market-maroo', storageBucket:'market-maroo.firebasestorage.app', messagingSenderId:'972296690748', appId:'1:972296690748:web:92805be7fac72a16637739', measurementId:'G-HD9E7SK4KC' };
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+const OWNER_WA = '201201016897';
+
+let allRequests = [];
+let lastSeenCount = 0;
+let firstLoad = true;
+
+function waUrl(text){ return `https://wa.me/${OWNER_WA}?text=${encodeURIComponent(text)}`; }
+
+function fmtDate(iso){
+  try{
+    const d = new Date(iso);
+    return d.toLocaleString('ar-EG', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }catch{ return iso || '-'; }
+}
+
+function isToday(iso){
+  try{
+    const d = new Date(iso);
+    const now = new Date();
+    return d.toDateString() === now.toDateString();
+  }catch{ return false; }
+}
+
+function buildWaText(r){
+  const L = ['مرحبًا،','', `الاسم: ${r.fullName||'-'}`, `الموبايل: ${r.phone||'-'}`, '', `القسم: ${r.section||'-'}`];
+  if (r.subsection) L.push(`الخدمة: ${r.subsection}`);
+  L.push('', 'التفاصيل:', r.message||'-');
+  return L.join('\n');
+}
+
+function renderCard(r, isNew){
+  const div = document.createElement('div');
+  div.className = 'card' + (isNew ? ' is-new' : '');
+  div.innerHTML = `
+    <div class="card-head">
+      <div class="card-title">${r.fullName ? esc(r.fullName) : 'بدون اسم'} ${r.phone ? '— '+esc(r.phone) : ''}</div>
+      <div class="card-time">${fmtDate(r.createdAt)}</div>
+    </div>
+    <div class="card-row"><span class="channel-tag">${esc(r.channel||'-')}</span>
+      <span class="label">القسم:</span> <b>${esc(r.section||'-')}</b>
+      ${r.subsection ? ` <span class="label">— الخدمة:</span> <b>${esc(r.subsection)}</b>` : ''}
+    </div>
+    ${r.message ? `<div class="msg-box">${esc(r.message)}</div>` : ''}
+    <div class="actions">
+      ${r.phone ? `<a class="wa-btn" href="${waUrl(buildWaText(r))}" target="_blank"><i class="fa-brands fa-whatsapp"></i> رد على واتساب</a>` : ''}
+    </div>
+  `;
+  return div;
+}
+
+function esc(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function populateSectionFilter(){
+  const select = document.getElementById('sectionFilter');
+  const current = select.value;
+  const sections = [...new Set(allRequests.map(r => r.section).filter(Boolean))];
+  select.innerHTML = '<option value="">كل الأقسام</option>' + sections.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  select.value = current;
+}
+
+function applyFiltersAndRender(){
+  const search = document.getElementById('searchInput').value.trim().toLowerCase();
+  const section = document.getElementById('sectionFilter').value;
+
+  let filtered = allRequests;
+  if (section) filtered = filtered.filter(r => r.section === section);
+  if (search) filtered = filtered.filter(r =>
+    (r.fullName||'').toLowerCase().includes(search) ||
+    (r.phone||'').toLowerCase().includes(search)
+  );
+
+  const container = document.getElementById('cardsContainer');
+  container.innerHTML = '';
+  document.getElementById('empty').style.display = filtered.length ? 'none' : 'block';
+
+  filtered.forEach((r, idx) => {
+    const isNew = !firstLoad && idx === 0 && allRequests.length > lastSeenCount;
+    container.appendChild(renderCard(r, isNew));
+  });
+
+  document.getElementById('statTotal').textContent = allRequests.length;
+  document.getElementById('statToday').textContent = allRequests.filter(r => isToday(r.createdAt)).length;
+}
+
+function startListening(){
+  document.getElementById('status').textContent = 'جاري الاتصال بفايربيز...';
+  db.collection('requests').orderBy('createdAt', 'desc').onSnapshot(snap => {
+    document.getElementById('status').textContent = '';
+    allRequests = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    populateSectionFilter();
+    applyFiltersAndRender();
+    lastSeenCount = allRequests.length;
+    firstLoad = false;
+  }, err => {
+    document.getElementById('status').textContent = '❌ خطأ في الاتصال: ' + err.message;
+  });
+}
+
+document.getElementById('searchInput').addEventListener('input', applyFiltersAndRender);
+document.getElementById('sectionFilter').addEventListener('change', applyFiltersAndRender);
+document.getElementById('refreshBtn').addEventListener('click', () => location.reload());
+
+startListening();
+</script>
+</body>
+</html>
