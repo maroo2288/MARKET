@@ -372,6 +372,26 @@
     .svc-panel__body { padding: 16px 18px 20px; }
 
     
+    .cctv-3d {
+      position: relative; border-radius: 16px; overflow: hidden; margin-bottom: 16px;
+      border: 1px solid rgba(212,175,55,0.35);
+      background: radial-gradient(circle at 50% 30%, rgba(212,175,55,0.09), transparent 70%), var(--jet);
+    }
+    .cctv-3d model-viewer {
+      width: 100%; height: 260px; --poster-color: transparent;
+      --progress-bar-color: var(--gold);
+    }
+    .cctv-3d__credit {
+      position: absolute; bottom: 6px; left: 10px; font-size: 0.62rem; color: rgba(248,244,227,0.45);
+      background: rgba(0,0,0,0.35); padding: 2px 8px; border-radius: 20px; backdrop-filter: blur(2px);
+    }
+    .cctv-3d__credit a { color: rgba(212,175,55,0.7); text-decoration: none; }
+    .cctv-3d__hint {
+      position: absolute; top: 8px; right: 10px; font-size: 0.68rem; color: var(--gold);
+      background: rgba(0,0,0,0.4); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(212,175,55,0.3);
+    }
+    @media (max-width: 480px) { .cctv-3d model-viewer { height: 210px; } }
+
     .sub-grid { display: grid; gap: 10px; }
     .sub-card {
       border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
@@ -1847,6 +1867,7 @@
     }
     .pp-guest-banner strong { color: var(--gold); }
 </style>
+  <script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
 </head>
 <body>
 
@@ -2896,7 +2917,25 @@
 
   function buildCctvHtml() {
     const svc=SERVICES.find(s=>s.id==='cctv');
-    let h=`<div id="cctvRoot">${mkSubCards(CCTV_SUB)}</div>`;
+    const viewer3d = `
+      <div class="cctv-3d">
+        <model-viewer
+          src="surveillance_camera.glb"
+          alt="موديل ثلاثي الأبعاد لكاميرا مراقبة"
+          camera-controls
+          auto-rotate
+          auto-rotate-delay="800"
+          rotation-per-second="18deg"
+          disable-pan
+          shadow-intensity="1"
+          exposure="0.95"
+          interaction-prompt="none"
+          loading="lazy">
+        </model-viewer>
+        <span class="cctv-3d__hint"><i class="fa-solid fa-arrows-rotate"></i> اسحب للتدوير</span>
+        <span class="cctv-3d__credit">Model: <a href="https://sketchfab.com/3d-models/surveillance-camera-9f4ea94f8dbc4adf8f9a9b321a389f21" target="_blank" rel="noopener">FayBall</a> (CC-BY-4.0)</span>
+      </div>`;
+    let h=`<div id="cctvRoot">${viewer3d}${mkSubCards(CCTV_SUB)}</div>`;
     CCTV_SUB.forEach(sub=>{
       const f=sub.id==='install'?[{id:'place',label:'المكان',type:'text',required:false},{id:'count',label:'عدد الكاميرات',type:'text',required:false},{id:'time',label:'ميعاد مناسب',type:'text',required:false}]:[{id:'place',label:'المكان',type:'text',required:false},{id:'problem',label:'نوع العطل',type:'text',required:false},{id:'time',label:'ميعاد مناسب',type:'text',required:false}];
       h+=mkForm({fid:`cc_${sub.id}`,section:svc.title,sub:sub.title,title:`${svc.title} — ${sub.title}`,subtitle:'اكتب استفسارك.',ph:'التفاصيل...',fields:f});
